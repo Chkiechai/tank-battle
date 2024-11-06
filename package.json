@@ -1,0 +1,29 @@
+{
+  "name": "",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "build": "npm run build-code && npm run build-bundle",
+    "build-code": "tsc",
+    "build-bundle": "esbuild build/app.js --sourcemap --bundle --outfile=dist/app.cjs --platform=node --format=cjs",
+    "run": "node dist/app.cjs",
+    "br": "npm run build && npm run run",
+    "test": "jest"
+  },
+  "author": "Erik Lee",
+  "license": "MIT",
+  "homepage": "",
+  "devDependencies": {
+    "@babel/preset-env": "^7.25.4",
+    "@babel/preset-typescript": "^7.24.7",
+    "@jest/globals": "^29.7.0",
+    "@types/node": "^22.5.4",
+    "esbuild": "^0.23.1",
+    "jest": "^29.7.0",
+    "typescript": "^5.6.2"
+  },
+  "dependencies": {
+    "source-map-support": "^0.5.21"
+  }
+}
