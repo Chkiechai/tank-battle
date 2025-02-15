@@ -61,10 +61,10 @@ export default class Tank{
   
   static min_turn_angle: number=0.00001
   static width:number = 60
-  static height:number = 80
+  static length:number = 80
   
   constructor(wheel_base:number, max_energy: number, code: string, pos:Vector) {
-    this.body = Bodies.rectangle(pos.x, pos.y, Tank.width, Tank.height);
+    this.body = Bodies.rectangle(pos.x, pos.y, Tank.length, Tank.width);
     this.max_energy = max_energy;
     this.gun_angle = 0;
     this.wheel_base = wheel_base;
@@ -121,6 +121,7 @@ export default class Tank{
     Body.setAngularVelocity(this.body, delta_angle/delta_t);
     Body.setPosition(this.body, Vector.add(this.body.position, Vector.mult(velocity,delta_t)));
     Body.setVelocity(this.body, velocity);
+    console.log("Speed: ",Vector.magnitude(velocity));
   }
 
   getSensors() : Sensors {
