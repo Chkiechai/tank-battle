@@ -5,8 +5,10 @@
   "description": "",
   "scripts": {
     "build": "npm run build-code && npm run build-bundle",
+    "build-web": "npm run build-code && npm run bundle-web",
     "build-code": "tsc",
     "build-bundle": "esbuild build/app.js --sourcemap --bundle --outfile=dist/app.cjs --platform=node --format=cjs",
+    "bundle-web": "esbuild build/app.js --sourcemap --bundle --outfile=dist/app.js --target=chrome58,firefox57,safari11,edge16",
     "run": "node dist/app.cjs",
     "br": "npm run build && npm run run",
     "test": "jest"
@@ -24,6 +26,10 @@
     "typescript": "^5.6.2"
   },
   "dependencies": {
+    "@sebastianwessel/quickjs": "^1.3.0",
+    "@types/matter-js": "^0.19.8",
+    "matter-js": "^0.20.0",
+    "ses": "^1.11.0",
     "source-map-support": "^0.5.21"
   }
 }
