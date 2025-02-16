@@ -1,6 +1,6 @@
 import {Vector as Vector} from 'matter-js';
 import {Bodies,Body,Engine} from 'matter-js';
-
+import { nstr } from './utils';
 
 type Controls = {
   turn_gun: number,
@@ -121,7 +121,15 @@ export default class Tank{
     Body.setAngularVelocity(this.body, delta_angle/delta_t);
     Body.setPosition(this.body, Vector.add(this.body.position, Vector.mult(velocity,delta_t)));
     Body.setVelocity(this.body, velocity);
-    console.log("Speed: ",Vector.magnitude(velocity));
+    console.log(`Tank pose: `
+      +` dt: ${nstr(delta_t)}`
+      +` left: ${nstr(this.left_speed)}`
+      +` right: ${nstr(this.right_speed)}`
+      //+` pos=(${nstr(this.body.position.x)},${nstr(this.body.position.y)})`
+      +` ang=${nstr(this.body.angle)}` 
+      +` angvel=${nstr(this.body.angularVelocity)}`
+      //+` vel=(${nstr(this.body.velocity.x)},${nstr(this.body.velocity.y)})`)
+    );
   }
 
   getSensors() : Sensors {

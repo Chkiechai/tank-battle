@@ -8,8 +8,8 @@ let tank_code =
   function drive_speed_and_angle(control,speed,angvel) {
     let rad = speed/angvel;
     if(angvel > 0) {
-      control.right_track_speed = speed;
-      control.left_track_speed = rad/(rad+60)*speed;
+      control.left_track_speed = speed;
+      control.right_track_speed = rad/(rad+60)*speed;
     } else if(angvel < 0) {
       control.left_track_speed = rad/(rad+60)*speed;
       control.right_track_speed = speed;
