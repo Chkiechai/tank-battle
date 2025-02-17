@@ -5,7 +5,8 @@ import { Game } from "./game";
 import Editor from "./editor";
 
 let tank_code = 
-  `
+`export default function update(env) {
+  let controls = env.getControls();
   let wheel_base = 20;
   function drive_speed_and_angle(control,speed,angvel) {
     let rad = speed/angvel;
@@ -25,10 +26,11 @@ let tank_code =
     let ang_vel = speed/radius;
     drive_speed_and_angle(control,speed,ang_vel);
   }
-  //console.log("Inside tank code: controls = ",controls);
   controls.turn_gun = 1.0;
   drive_radius(controls, -30, 50);
-  return controls;
+  
+  env.setControls(controls);
+}
 `;
 
 // create two boxes and a ground

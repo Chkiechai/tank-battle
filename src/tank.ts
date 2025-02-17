@@ -1,6 +1,7 @@
 import {Vector as Vector} from 'matter-js';
 import {Bodies,Body,Engine} from 'matter-js';
 import { nstr } from './utils';
+import Script from './script';
 
 type Controls = {
   turn_gun: number,
@@ -55,8 +56,9 @@ export default class Tank{
   right_speed: number
   max_energy: number 
   max_speed: number
+  delta_t: number
   body: Body
-  code: Function
+  code: Script
   controls: Controls
   
   static min_turn_angle: number=0.00001
@@ -75,34 +77,13 @@ export default class Tank{
     this.right_speed = 0;
     this.energy = this.max_energy;
     this.max_speed = 100;
-    let curly=0, paren=0, square=0;
-    for(let ch of code) {
-      switch(ch) {
-        case '{': 
-          curly++;
-          break;
-        case '}':
-          curly--;
-          break;
-        case '(':
-          paren++;
-          break;
-        case ')':
-          paren--;
-          break;
-        case '[':
-          square++;
-          break;
-        case ']':
-          square--;
-          break;
-      }
-    }
-    if(curly+paren+square > 0) {
-      throw new Error("Unbalanced parens, braces, or brackets in code expression.");
-    }
-    this.code = new Function("controls","sensors","console","Math",
-      `"use_strict"; return (controls,sensors,console,Math,window)=>{${code}}`);
+    this.delta_t = 0.016;
+    this.code = new Script(code, Script.addDefaultGlobals({
+      getSensors: this.getSensors.bind(this),
+      getControls: this.getControls.bind(this),
+      setControls: this.setControls.bind(this),
+      getDeltaT: this.getDeltaT.bind(this),
+    }));
     this.controls = {
       turn_gun: 0,
       turn_radar: 0,
@@ -153,7 +134,15 @@ export default class Tank{
     } as Sensors;
   }
 
-  applyControls(controls:Controls) {
+  getControls() {
+    return this.controls;
+  }
+ 
+  getDeltaT() {
+    return this.delta_t;
+  }
+  
+  setControls(controls:Controls) {
     if(controls) {
       this.controls = controls;
     }
@@ -161,12 +150,8 @@ export default class Tank{
   
   control(delta_t: number) {
     let sensors = this.getSensors();
-    let result = this.code()(this.controls,sensors,console,Math);
-    if(result) {
-      this.applyControls(result as Controls);
-    } else {
-      console.log(`Error: \n${result}`);
-    }
+    this.delta_t = delta_t;
+    this.code.execute();
   }
 }
 
