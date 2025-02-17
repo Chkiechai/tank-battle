@@ -23,7 +23,11 @@ export class Game {
     // create a renderer
     this.render = Render.create({
       element: document.querySelector('#game'),
-      engine: this.engine
+      engine: this.engine,
+      options: {
+        height: Game.bounds.height,
+        width: Game.bounds.width,
+      }
     });
     if(!this.render) {
       throw new Error("Couldn't build a renderer!");

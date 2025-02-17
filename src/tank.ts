@@ -60,14 +60,15 @@ export default class Tank{
   controls: Controls
   
   static min_turn_angle: number=0.00001
-  static width:number = 60
-  static length:number = 80
+  static width:number = 20
+  static length:number = 25 
+  static max_energy: 100 
   
-  constructor(wheel_base:number, max_energy: number, code: string, pos:Vector) {
+  constructor(code: string, pos:Vector) {
     this.body = Bodies.rectangle(pos.x, pos.y, Tank.length, Tank.width);
-    this.max_energy = max_energy;
+    this.max_energy = Tank.max_energy;
     this.gun_angle = 0;
-    this.wheel_base = wheel_base;
+    this.wheel_base = Tank.width;
     Body.setAngle(this.body,0);
     this.gun_charge = 1;
     this.left_speed = 0;
@@ -121,17 +122,18 @@ export default class Tank{
     Body.setAngularVelocity(this.body, delta_angle/delta_t);
     Body.setPosition(this.body, Vector.add(this.body.position, Vector.mult(velocity,delta_t)));
     Body.setVelocity(this.body, velocity);
-    console.log(`Tank pose: `
-      +` dt: ${nstr(delta_t)}`
-      +` left: ${nstr(this.left_speed)}`
-      +` right: ${nstr(this.right_speed)}`
-      //+` pos=(${nstr(this.body.position.x)},${nstr(this.body.position.y)})`
-      +` ang=${nstr(this.body.angle)}` 
-      +` angvel=${nstr(this.body.angularVelocity)}`
-      //+` vel=(${nstr(this.body.velocity.x)},${nstr(this.body.velocity.y)})`)
-    );
   }
 
+  show():string {
+    return `Tank pose: `
+      +` left: ${nstr(this.left_speed)}`
+      +` right: ${nstr(this.right_speed)}`
+      +` pos=(${nstr(this.body.position.x)},${nstr(this.body.position.y)})`
+      +` ang=${nstr(this.body.angle)}` 
+      +` angvel=${nstr(this.body.angularVelocity)}`
+      +` vel=(${nstr(this.body.velocity.x)},${nstr(this.body.velocity.y)})`;
+  }
+  
   getSensors() : Sensors {
     let rd = {
       wall: false,

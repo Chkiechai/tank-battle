@@ -1,18 +1,20 @@
 
-import {Common,Events,Engine,Render,Runner,Bodies,Composite,Body,Vector} from "matter-js";
+import {Vector} from "matter-js";
 import Tank from "./tank";
 import { Game } from "./game";
+import Editor from "./editor";
 
 let tank_code = 
   `
+  let wheel_base = 20;
   function drive_speed_and_angle(control,speed,angvel) {
     let rad = speed/angvel;
     if(angvel > 0) {
-      control.left_track_speed = speed;
-      control.right_track_speed = rad/(rad+60)*speed;
-    } else if(angvel < 0) {
-      control.left_track_speed = rad/(rad+60)*speed;
+      control.left_track_speed = rad/(rad+wheel_base)*speed;
       control.right_track_speed = speed;
+    } else if(angvel < 0) {
+      control.left_track_speed = speed;
+      control.right_track_speed = rad/(rad+wheel_base)*speed;
     } else {
       control.left_track_speed = speed;
       control.right_track_speed = speed;
@@ -25,13 +27,16 @@ let tank_code =
   }
   //console.log("Inside tank code: controls = ",controls);
   controls.turn_gun = 1.0;
-  drive_radius(controls, 60, 1000);
+  drive_radius(controls, -30, 50);
   return controls;
 `;
 
 // create two boxes and a ground
-var tank = new Tank(60, 100, tank_code, Vector.create(200,200));
+var tank = new Tank(tank_code, Vector.create(200,200));
 
+let editor = new Editor('monaco-editor-embed');
+editor.setup();
 let game = new Game();
 game.add_tank(tank);
 game.run();
+
