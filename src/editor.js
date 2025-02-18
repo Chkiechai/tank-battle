@@ -39,7 +39,14 @@ export default class Editor {
         _tsWorker,
         sandboxFactory
       ) => {
-          const initialCode = `import {controls,sensors,Controls,Sensors,Math} from './tank-api';`;
+          const initialCode = `import {TankAPI,Controls,Sensors} from './tank-api';
+
+export default function loop(api:TankAPI) {
+  let controls = api.getControls();
+
+  api.setControls(controls);
+}
+`;
 
           const isOK = main && window.ts && sandboxFactory
           if (isOK) {

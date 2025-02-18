@@ -1,5 +1,12 @@
 import {Vector} from 'matter-js';
 
+export interface TankAPI {
+  getControls: ()=>Controls,
+  getSensors: ()=>Sensors,
+  setControls: (arg0:Controls) => void,
+  getDeltaT: () => number,
+}
+
 export interface Controls {
   turn_gun: number,
   turn_radar: number,
@@ -32,6 +39,3 @@ export interface Sensors  {
   impact: boolean,
 }
 
-export var controls: Controls;
-export const sensors: Sensors;
-export const Math:Math;

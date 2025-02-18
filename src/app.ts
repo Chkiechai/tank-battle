@@ -4,7 +4,7 @@ import Tank from "./tank";
 import { Game } from "./game";
 import Editor from "./editor";
 
-let tank_code = 
+let _circle_tank_code = 
 `export default function update(env) {
   let controls = env.getControls();
   let wheel_base = 20;
@@ -32,6 +32,15 @@ let tank_code =
   env.setControls(controls);
 }
 `;
+let tank_code = `
+import {TankAPI,Controls,Sensors} from './tank-api';
+
+export default function loop(api:TankAPI) {
+  let controls = api.getControls();
+
+  api.setControls(controls);
+}
+`
 
 let tank = new Tank(tank_code, Vector.create(200,200));
 let editor = new Editor('monaco-editor-embed');

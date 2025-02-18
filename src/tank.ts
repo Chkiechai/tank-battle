@@ -112,7 +112,8 @@ export default class Tank{
       +` pos=(${nstr(this.body.position.x)},${nstr(this.body.position.y)})`
       +` ang=${nstr(this.body.angle)}` 
       +` angvel=${nstr(this.body.angularVelocity)}`
-      +` vel=(${nstr(this.body.velocity.x)},${nstr(this.body.velocity.y)})`;
+      +` vel=(${nstr(this.body.velocity.x)},${nstr(this.body.velocity.y)})`
+      ;
   }
 
   setCode(code:string) {
@@ -153,11 +154,8 @@ export default class Tank{
   }
   
   control(delta_t: number) {
-    let sensors = this.getSensors();
     this.delta_t = delta_t;
     this.code.execute();
   }
 }
-
-
 
