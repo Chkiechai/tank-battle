@@ -69,9 +69,9 @@
       </div>
       <div class="row">
         <button id="shipCodeButton">Ship It!</button>
-        <button onClick="shipCode()">Check It</button>
-        <button onClick="shipCode()">Reformat</button>
-        <button onClick="shipCode()">Download</button>
+        <button id="checkCodeButton">Check It</button>
+        <button id="reformatCodeButton">Reformat</button>
+        <button id="downloadButton">Download</button>
       </div>
     </div>
   </div>
@@ -81,6 +81,7 @@
   
   function script_loader(code) {
     let self=this;
+    console.log(`script_loader: code = ${code}`);
     let uri = `data:text/javascript;base64,${btoa(code)}`;
     return import(uri)
       .then(scr=>{

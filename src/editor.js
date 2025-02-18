@@ -73,13 +73,15 @@ export default class Editor {
   }
 
   onShipCode(handler) {
+    console.log("Set shipCode handler");
     this.code_handler = handler;
   }
 
   shipCode() {
+    let self = this;
     if(this.sandbox && this.code_handler) {
-      let code = this.sandbox.getRunnableJS();
-      handler(code);
+      this.sandbox.getRunnableJS()
+        .then((code)=>self.code_handler(code))
     }
   }
 }
