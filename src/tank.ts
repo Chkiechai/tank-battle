@@ -114,9 +114,11 @@ export default class Tank{
       +` angvel=${nstr(this.body.angularVelocity)}`
       +` vel=(${nstr(this.body.velocity.x)},${nstr(this.body.velocity.y)})`;
   }
+
   setCode(code:string) {
     this.code.update(code);
   }
+
   getSensors() : Sensors {
     let rd = {
       wall: false,
