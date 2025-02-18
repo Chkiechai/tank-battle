@@ -68,7 +68,7 @@
         <div id="monaco-editor-embed" style="height: 800px;" />
       </div>
       <div class="row">
-        <button onClick="shipCode()">Ship It!</button>
+        <button id="shipCodeButton">Ship It!</button>
         <button onClick="shipCode()">Check It</button>
         <button onClick="shipCode()">Reformat</button>
         <button onClick="shipCode()">Download</button>
@@ -77,6 +77,8 @@
   </div>
   <!--<script src="node_modules/ses/dist/ses.cjs"></script>-->
   <script>
+  //import {editor} from "dist/app.js";
+  
   function script_loader(code) {
     let self=this;
     let uri = `data:text/javascript;base64,${btoa(code)}`;
@@ -86,9 +88,7 @@
         return scr.default;
       });
   }
-
-  script_loader("export default function foo(){console.log('asfd')}").then(f => f());
-
+  
   </script>
   <script src="dist/app.js"></script>
 </html>

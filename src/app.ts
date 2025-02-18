@@ -33,12 +33,12 @@ let tank_code =
 }
 `;
 
-// create two boxes and a ground
-var tank = new Tank(tank_code, Vector.create(200,200));
-
+let tank = new Tank(tank_code, Vector.create(200,200));
 let editor = new Editor('monaco-editor-embed');
 editor.setup();
+
 let game = new Game();
+editor.onShipCode((code)=>tank.setCode(code))
 game.add_tank(tank);
 game.run();
 

@@ -28,6 +28,12 @@ export default class Script{
       .then((fn:(env:{[key:string]:any})=>void) => self.js_code = fn);
   }
 
+  update(js_code:string) {
+    let self=this;
+    this.scriptImport(js_code)
+    .then((fn:(env:{[key:string]:any})=>void) => self.js_code = fn);
+  }
+  
   execute() {
     if(typeof(this.js_code) == 'function') {
       this.js_code(this.globals);

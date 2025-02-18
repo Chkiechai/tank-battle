@@ -2,12 +2,15 @@
 
 export default class Editor {
   element_id
+  sandbox
+  code_handler
   
   constructor(element_id) {
     this.element_id = element_id
   }
   
   setup() {
+    let self=this;
     // First set up the VSCode loader in a script tag
     const getLoaderScript = document.createElement('script')
     getLoaderScript.src = 'https://www.typescriptlang.org/js/vs.loader.js'
@@ -55,6 +58,7 @@ export default class Editor {
           }
 
           const sandbox = sandboxFactory.createTypeScriptSandbox(sandboxConfig, main, window.ts);
+          self.sandbox = sandbox;
           fetch("tank-api.d.ts")
             .then((response)=>response.text())
             .then((tank_api)=> sandbox.languageServiceDefaults.addExtraLib(tank_api,"file:///tank-api.d.ts"))
@@ -65,5 +69,17 @@ export default class Editor {
         })
     }
     document.body.appendChild(getLoaderScript)
+    document.querySelector('#shipCodeButton').addEventListener('click', ()=>self.shipCode())
+  }
+
+  onShipCode(handler) {
+    this.code_handler = handler;
+  }
+
+  shipCode() {
+    if(this.sandbox && this.code_handler) {
+      let code = this.sandbox.getRunnableJS();
+      handler(code);
+    }
   }
 }
