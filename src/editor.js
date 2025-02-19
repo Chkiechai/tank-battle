@@ -1,9 +1,10 @@
-
+import MurmurHash3 from 'imurmurhash';
 
 export default class Editor {
   element_id
   sandbox
   code_handler
+  backup_timer
   
   constructor(element_id) {
     this.element_id = element_id
@@ -39,7 +40,7 @@ export default class Editor {
         _tsWorker,
         sandboxFactory
       ) => {
-          let initialCode = localStorage.getItem("com.ginosterous.tank-battle.code.shipped");
+          let initialCode = this.loadSaved();
           if(initialCode == null) {
             initialCode = `import {TankAPI,Controls,Sensors} from './tank-api';
 
@@ -50,6 +51,8 @@ export default function loop(api:TankAPI) {
 }
 `;
           }
+          let self = this;
+          this.backup_timer = setInterval(()=>self.saveBackup(), 10000);
 
           const isOK = main && window.ts && sandboxFactory
           if (isOK) {
@@ -87,9 +90,57 @@ export default function loop(api:TankAPI) {
     this.code_handler = handler;
   }
 
+  save() {
+    console.log("Saving code...");
+    let code=this.sandbox.editor.getValue();
+    localStorage.setItem("com.ginosterous.tank-battle.code.shipped", code);
+    this.saveBackup(code)
+  }
+
+  loadSaved() {
+    console.log("loading...");
+    return localStorage.getItem("com.ginosterous.tank-battle.code.shipped");
+  }
+
+  saveBackup(source=null) {
+    let index = localStorage.getItem("com.ginosterous.tank-battle.backup-index")
+      ?.split(',').map((s)=>parseInt(s)) 
+      || []; 
+    if(source == null) {
+      source = this.sandbox.editor.getValue();
+    }
+    let hash = MurmurHash3(source).result();
+    let existing = index.indexOf(hash);
+    if(existing >= 0){ // move this version to the front, but don't change anything else.
+      let temp = index[0];
+      index[0] = hash;
+      index[existing] = temp;
+      return;
+    } else if(index.length > 5) {
+      index.unshift(hash);
+      index.pop();
+    } else {
+      index.unshift(hash);
+    }
+    localStorage.setItem(`com.ginosterous.tank-battle.backup.${hash}`, source);
+    localStorage.setItem("com.ginosterous.tank-battle.backup-index", index.join(','));
+    console.log(`Saved backup id ${hash}, index is ${JSON.stringify(index)}`);
+  }
+
+  loadBackup(backup_id=null) {
+    if(backup_id == null) {
+      // Get the most recent backup if no identifier is provided.
+      backup_id = localStorage.getItem("com.ginosterous.tank-battle.backup-index")?.split(',')[0];
+      if(!backup_id) {
+        return null;
+      }
+    }
+    return localstorage.getItem(`com.ginosterous.tank-battle.backup.${backup_id}`);
+  }
+  
   shipCode() {
     let self = this;
-    localStorage.setItem("com.ginosterous.tank-battle.code.shipped", this.sandbox.editor.getValue());
+    this.save();
     if(this.sandbox && this.code_handler) {
       this.sandbox.getRunnableJS()
         .then((code)=>self.code_handler(code))

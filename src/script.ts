@@ -37,9 +37,6 @@ export default class Script{
   execute() {
     if(typeof(this.js_code) == 'function') {
       this.js_code(this.globals);
-    } else {
-      console.log("Script function hasn't been defined yet");
-      //throw new Error("Can't execute script: function is undefined");
-    }
+    } 
   }
 }
