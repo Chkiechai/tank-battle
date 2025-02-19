@@ -50,7 +50,7 @@ editor.setup();
 
 let game = new Game();
 
-editor.onShipCode((code:any)=>{
+editor.onShipCode((code:string)=>{
   tank.reset(); 
   tank.setCode(code);
 });

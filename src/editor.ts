@@ -1,12 +1,29 @@
 import MurmurHash3 from 'imurmurhash';
+import {TankAPI} from '../tank-api';
 
+const default_code = `
+import {TankAPI,Controls,Sensors} from './tank-api';
+export default function loop(api:TankAPI) {
+  let controls = api.getControls();
+
+  api.setControls(controls);
+}
+`;
+
+declare var require:any;
+declare global {
+  interface Window {
+    ts: any;
+    require:any;
+  }
+}
 export default class Editor {
-  element_id
-  sandbox
-  code_handler
-  backup_timer
+  element_id:string
+  sandbox:any
+  code_handler:(code:string)=>void
+  backup_timer:ReturnType<typeof setInterval>
   
-  constructor(element_id) {
+  constructor(element_id:string) {
     this.element_id = element_id
   }
   
@@ -35,21 +52,11 @@ export default class Editor {
       })
 
       // Grab a copy of monaco, TypeScript and the sandbox
-      require(['vs/editor/editor.main', 'vs/language/typescript/tsWorker', 'sandbox/index'], (
-        main,
-        _tsWorker,
-        sandboxFactory
-      ) => {
+      require(['vs/editor/editor.main', 'vs/language/typescript/tsWorker', 'sandbox/index'], 
+        ( main:any, _tsWorker:any, sandboxFactory:any) => {
           let initialCode = this.loadSaved();
           if(initialCode == null) {
-            initialCode = `import {TankAPI,Controls,Sensors} from './tank-api';
-
-export default function loop(api:TankAPI) {
-  let controls = api.getControls();
-
-  api.setControls(controls);
-}
-`;
+            initialCode = default_code;
           }
           let self = this;
           this.backup_timer = setInterval(()=>self.saveBackup(), 10000);
@@ -59,7 +66,7 @@ export default function loop(api:TankAPI) {
             document.getElementById('loader').parentNode.removeChild(document.getElementById('loader'))
           } else {
             console.error('Could not get all the dependencies of sandbox set up!')
-            console.error('main', !!main, 'ts', !!window.ts, 'sandbox', !!sandbox)
+            console.error('main', !!main, 'ts', !!window.ts)
             return
           }
 
@@ -76,8 +83,8 @@ export default function loop(api:TankAPI) {
             .then((response)=>response.text())
             .then((tank_api)=> sandbox.languageServiceDefaults.addExtraLib(tank_api,"file:///tank-api.d.ts"))
             .then((_)=> sandbox.editor.focus())
-            .catch((e) => document.querySelector('#output').innerText = `Error loading tank API: ${e}`)
-            .finally((_) => document.querySelector('#output').innerText = `Loaded Tank API`)
+            .catch((e) => document.querySelector('#output').innerHTML = `Error loading tank API: ${e}`)
+            .finally(() => document.querySelector('#output').innerHTML = `Loaded Tank API`)
           ;
         })
     }
@@ -85,7 +92,7 @@ export default function loop(api:TankAPI) {
     document.querySelector('#shipCodeButton').addEventListener('click', ()=>self.shipCode())
   }
 
-  onShipCode(handler) {
+  onShipCode(handler:(code:string)=>void) {
     console.log("Set shipCode handler");
     this.code_handler = handler;
   }
@@ -97,7 +104,7 @@ export default function loop(api:TankAPI) {
     this.saveBackup(code)
   }
 
-  loadSaved() {
+  loadSaved():string|null {
     console.log("loading...");
     return localStorage.getItem("com.ginosterous.tank-battle.code.shipped");
   }
@@ -127,7 +134,7 @@ export default function loop(api:TankAPI) {
     console.log(`Saved backup id ${hash}, index is ${JSON.stringify(index)}`);
   }
 
-  loadBackup(backup_id=null) {
+  loadBackup(backup_id=null):string|null {
     if(backup_id == null) {
       // Get the most recent backup if no identifier is provided.
       backup_id = localStorage.getItem("com.ginosterous.tank-battle.backup-index")?.split(',')[0];
@@ -135,7 +142,7 @@ export default function loop(api:TankAPI) {
         return null;
       }
     }
-    return localstorage.getItem(`com.ginosterous.tank-battle.backup.${backup_id}`);
+    return localStorage.getItem(`com.ginosterous.tank-battle.backup.${backup_id}`);
   }
   
   shipCode() {
@@ -143,7 +150,8 @@ export default function loop(api:TankAPI) {
     this.save();
     if(this.sandbox && this.code_handler) {
       this.sandbox.getRunnableJS()
-        .then((code)=>self.code_handler(code))
+        .then((code:string)=>self.code_handler(code))
     }
   }
 }
+
