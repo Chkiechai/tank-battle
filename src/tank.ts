@@ -61,6 +61,7 @@ export default class Tank{
   code: Script
   controls: Controls
   update_handler:undefined|((t:Tank)=>void) = undefined
+  starting_pos: Vector
   
   static min_turn_angle: number=0.00001
   static width:number = 20
@@ -68,6 +69,7 @@ export default class Tank{
   static max_energy: 100 
   
   constructor(code: string, pos:Vector) {
+    this.starting_pos = pos;
     this.body = Bodies.rectangle(pos.x, pos.y, Tank.length, Tank.width);
     this.max_energy = Tank.max_energy;
     this.gun_angle = 0;
@@ -103,6 +105,14 @@ export default class Tank{
       }
       count += 1;
     }
+  }
+ 
+  reset() {
+    Body.setPosition(this.body, this.starting_pos);
+    Body.setVelocity(this.body,Vector.create(0,0));
+    Body.setAngle(this.body,0);
+    Body.setAngularSpeed(this.body, 0);
+    this.code.update('');
   }
   
   update(delta_t: number) {

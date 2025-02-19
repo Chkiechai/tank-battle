@@ -49,7 +49,12 @@ let editor = new Editor('monaco-editor-embed');
 editor.setup();
 
 let game = new Game();
-editor.onShipCode((code:any)=>tank.setCode(code))
+
+editor.onShipCode((code:any)=>{
+  tank.reset(); 
+  tank.setCode(code);
+});
+
 game.add_tank(tank);
 game.run();
 
