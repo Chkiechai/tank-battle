@@ -1,6 +1,6 @@
 import {Vector as Vector} from 'matter-js';
 import {Bodies,Body,Engine} from 'matter-js';
-import { nstr } from './utils';
+import { nstr,limitAngle } from './utils';
 import Script from './script';
 
 type Controls = {
@@ -60,6 +60,7 @@ export default class Tank{
   body: Body
   code: Script
   controls: Controls
+  update_handler:undefined|((t:Tank)=>void) = undefined
   
   static min_turn_angle: number=0.00001
   static width:number = 20
@@ -92,19 +93,34 @@ export default class Tank{
       fire_gun: false,
     };
   }
-
+  
+  onUpdate(hdler:(t:Tank)=>void, skip:number = 100) {
+    let count:number = 1;
+    let self = this;
+    this.update_handler = ()=>{
+      if(count % skip == 0) {
+        hdler(this);
+      }
+      count += 1;
+    }
+  }
+  
   update(delta_t: number) {
     this.left_speed = this.controls.left_track_speed;
     this.right_speed = this.controls.right_track_speed;
-    let delta_angle = (this.right_speed - this.left_speed)*delta_t / this.wheel_base;
+    let delta_angle = (this.left_speed - this.right_speed)*delta_t / this.wheel_base;
     let angle = this.body.angle;
     let velocity = Vector.mult(Vector.create(Math.cos(angle), Math.sin(angle)), (this.left_speed+this.right_speed)/2);
-    Body.setAngle(this.body, angle + delta_angle);
+    Body.setAngle(this.body, limitAngle(angle + delta_angle));
     Body.setAngularVelocity(this.body, delta_angle/delta_t);
     Body.setPosition(this.body, Vector.add(this.body.position, Vector.mult(velocity,delta_t)));
     Body.setVelocity(this.body, velocity);
+    if(this.update_handler) {
+      this.update_handler(this);
+    }
   }
 
+  
   show():string {
     return `Tank pose: `
       +` left: ${nstr(this.left_speed)}`

@@ -43,6 +43,8 @@ export default function loop(api:TankAPI) {
 `
 
 let tank = new Tank(tank_code, Vector.create(200,200));
+let element = document.querySelector('#output');
+tank.onUpdate((self)=>element.innerHTML=`<p>${self.show()}</p>`);
 let editor = new Editor('monaco-editor-embed');
 editor.setup();
 
