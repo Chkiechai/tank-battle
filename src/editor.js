@@ -39,7 +39,9 @@ export default class Editor {
         _tsWorker,
         sandboxFactory
       ) => {
-          const initialCode = `import {TankAPI,Controls,Sensors} from './tank-api';
+          let initialCode = localStorage.getItem("com.ginosterous.tank-battle.code.shipped");
+          if(initialCode == null) {
+            initialCode = `import {TankAPI,Controls,Sensors} from './tank-api';
 
 export default function loop(api:TankAPI) {
   let controls = api.getControls();
@@ -47,6 +49,7 @@ export default function loop(api:TankAPI) {
   api.setControls(controls);
 }
 `;
+          }
 
           const isOK = main && window.ts && sandboxFactory
           if (isOK) {
@@ -86,6 +89,7 @@ export default function loop(api:TankAPI) {
 
   shipCode() {
     let self = this;
+    localStorage.setItem("com.ginosterous.tank-battle.code.shipped", this.sandbox.editor.getValue());
     if(this.sandbox && this.code_handler) {
       this.sandbox.getRunnableJS()
         .then((code)=>self.code_handler(code))
