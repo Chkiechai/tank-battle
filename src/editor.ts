@@ -14,7 +14,6 @@ declare var require:any;
 declare global {
   interface Window {
     ts: any;
-    require:any;
   }
 }
 export default class Editor {
