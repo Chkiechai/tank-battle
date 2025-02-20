@@ -67,8 +67,19 @@ export default class Tank{
   static width:number = 20
   static length:number = 25 
   static max_energy: 100 
-  
-  constructor(code: string, pos:Vector) {
+  static default_code = `
+import {TankAPI,Controls,Sensors} from './tank-api';
+export function setup() {
+
+}
+
+export function loop(api:TankAPI) {
+  let controls = api.getControls();
+
+  api.setControls(controls);
+}
+`;
+  constructor(pos:Vector) {
     this.starting_pos = pos;
     this.body = Bodies.rectangle(pos.x, pos.y, Tank.length, Tank.width);
     this.max_energy = Tank.max_energy;
@@ -81,7 +92,7 @@ export default class Tank{
     this.energy = this.max_energy;
     this.max_speed = 100;
     this.delta_t = 0.016;
-    this.code = new Script(code, Script.addDefaultGlobals({
+    this.code = new Script('', Script.addDefaultGlobals({
       getSensors: this.getSensors.bind(this),
       getControls: this.getControls.bind(this),
       setControls: this.setControls.bind(this),

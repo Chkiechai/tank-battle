@@ -23,15 +23,18 @@ export default class Script{
   
   constructor(js_code:string,globals=Script.addDefaultGlobals({})) {
     this.globals = globals;
-    let self = this;
-    this.scriptImport(js_code)
-      .then((fn:(env:{[key:string]:any})=>void) => self.js_code = fn);
+    this.update(js_code);
   }
 
   update(js_code:string) {
     let self=this;
     this.scriptImport(js_code)
-    .then((fn:(env:{[key:string]:any})=>void) => self.js_code = fn);
+      .then((module:any) => {
+        console.log("Calling setup now..."+module);
+        module.setup();
+        self.js_code = module.loop;
+      })
+    .catch((e)=>console.log("Error loading script: "+e));
   }
   
   execute() {

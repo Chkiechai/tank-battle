@@ -1,14 +1,6 @@
 import MurmurHash3 from 'imurmurhash';
 import {TankAPI} from '../tank-api';
-
-const default_code = `
-import {TankAPI,Controls,Sensors} from './tank-api';
-export default function loop(api:TankAPI) {
-  let controls = api.getControls();
-
-  api.setControls(controls);
-}
-`;
+import Tank from './tank';
 
 declare var require:any;
 declare global {
@@ -55,7 +47,7 @@ export default class Editor {
         ( main:any, _tsWorker:any, sandboxFactory:any) => {
           let initialCode = this.loadSaved();
           if(initialCode == null) {
-            initialCode = default_code;
+            initialCode = Tank.default_code;
           }
           let self = this;
           this.backup_timer = setInterval(()=>self.saveBackup(), 10000);

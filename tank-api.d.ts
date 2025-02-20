@@ -1,8 +1,8 @@
 import {Vector} from 'matter-js';
 
 export interface TankAPI {
-  getControls: ()=>Controls,
-  getSensors: ()=>Sensors,
+  getControls: () => Controls,
+  getSensors: () => Sensors,
   setControls: (arg0:Controls) => void,
   getDeltaT: () => number,
 }
