@@ -8,6 +8,8 @@ export class Game {
   tanks: Tank[]
   last_update: number
   animation_id:number | undefined
+ 
+  static fixed_dt:number|undefined = 0.016;
   
   static bounds = {
     width:800,
@@ -61,7 +63,15 @@ export class Game {
     Render.run(this.render);
     this.animation_id = requestAnimationFrame((_:number)=>this.update())  
   }
-  
+
+  fixDeltaT(dt: number): number {
+    if(Game.fixed_dt) {
+      return Game.fixed_dt;
+    } else {
+      return dt;
+    }
+  }
+
   update(max_fr:number = 60) {
     let this_update = new Date().getTime()/1000.0;
     if(this.last_update < 0) {
@@ -69,7 +79,7 @@ export class Game {
     }
     let delta_t = this_update-this.last_update;
     if(delta_t >= 1/max_fr) {
-      Engine.update(this.engine,delta_t);
+      Engine.update(this.engine,this.fixDeltaT(delta_t));
       this.last_update = new Date().getTime()/1000.0;
     }
     this.animation_id = requestAnimationFrame(()=>this.update(max_fr))

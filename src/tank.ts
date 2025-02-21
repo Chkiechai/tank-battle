@@ -73,9 +73,11 @@ export function setup() {
 
 }
 
+
 export function loop(api:TankAPI) {
   let controls = api.getControls();
-
+  let sensors = api.getSensors();
+  //your code here.
   api.setControls(controls);
 }
 `;
