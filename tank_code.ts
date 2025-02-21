@@ -6,16 +6,7 @@ let t = 0;
 var controls: Controls;
 var sensors: Sensors;
 var delta_t: number;
-var plan = [
-  turn_toward(Math.PI / 2),
-  forward(100),
-  turn_toward(Math.PI),
-  forward(100),
-  turn_toward(-Math.PI / 2),
-  forward(100),
-  turn_toward(0),
-  forward(100)
-];
+var plan:(()=>boolean)[] = [ ];
 var step = 0;
 
 export function setup() {

@@ -6,7 +6,7 @@ import Editor from "./editor";
 
 let tank = new Tank(Vector.create(200,200));
 let element = document.querySelector('#output');
-tank.onUpdate((self)=>element.innerHTML=`<p>${self.show()}</p>`);
+tank.onUpdate((self)=>element.innerHTML=`<p>${self.show()}</p>`, 10);
 let editor = new Editor('monaco-editor-embed');
 editor.setup();
 
