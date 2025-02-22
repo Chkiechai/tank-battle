@@ -1,4 +1,4 @@
-import {Vector as Vector} from 'matter-js';
+import {Composite, Vector as Vector, Vertices} from 'matter-js';
 import {Bodies,Body,Engine} from 'matter-js';
 import { nstr,limitAngle } from './utils';
 import Script from './script';
@@ -53,6 +53,8 @@ export default class Tank{
   energy: number
   gun_charge: number
   radar_angle: number
+  radar_speed: number
+  gun_speed: number
   left_speed: number
   right_speed: number
   max_energy: number 
@@ -63,12 +65,18 @@ export default class Tank{
   controls: Controls
   update_handler:undefined|((t:Tank)=>void) = undefined
   starting_pos: Vector
+  radar_body: Body
+  radar_verts: Vertices
   
   static min_turn_angle: number=0.00001
   static width:number = 20
   static length:number = 25 
   static max_energy: 100 
   static max_speed:number = 200
+  static max_radar_speed:number = 2*Math.PI
+  static radar_range:number = 200
+  static max_gun_speed:number = Math.PI/2
+  
   static default_code = `
 import {TankAPI,Controls,Sensors} from './tank-api';
 
@@ -85,7 +93,7 @@ export function loop(api:TankAPI) {
 `;
   constructor(pos:Vector, extra_globals: any) {
     this.starting_pos = pos;
-    this.body = Bodies.rectangle(pos.x, pos.y, Tank.length, Tank.width);
+    this.body = Bodies.rectangle(pos.x, pos.y, Tank.length, Tank.width,{label:"Tank Body"});
     this.body.frictionAir = 0;
     this.max_energy = Tank.max_energy;
     this.gun_angle = 0;
@@ -97,6 +105,32 @@ export function loop(api:TankAPI) {
     this.energy = this.max_energy;
     this.max_speed = 100;
     this.delta_t = 0.016;
+    this.gun_speed = 0;
+    this.radar_speed = 0;
+    this.radar_angle = 0;
+    let half_ms = Tank.max_radar_speed/(2*Game.sim_fps);
+    let verts = [
+        [0,-Math.sin(half_ms)/3],
+        [Math.cos(half_ms),-Math.sin(half_ms)],
+        [1,0],
+        [Math.cos(half_ms),Math.sin(half_ms)],
+        [0,Math.sin(half_ms)/3]
+      ].map((pt)=>Vector.mult(Vector.create(pt[0],pt[1]),Tank.radar_range));
+    
+    this.radar_body = Bodies.fromVertices(0,0,[verts],
+      {
+        label:"radar",
+        isSensor:true,
+        render:{
+          opacity: 0.5,
+          fillStyle: '#fff',
+          lineWidth: 0,
+        }
+      });
+    this.radar_body.frictionAir = 0;
+    Body.setCentre(this.radar_body, Vector.create(this.radar_body.bounds.min.x+1,0));
+    Body.setPosition(this.radar_body, this.body.position);
+    this.radar_body.render.fillStyle = '#fff';
     
     // Add globals for the tank
     extra_globals.getSensors= this.getSensors.bind(this);
@@ -120,6 +154,11 @@ export function loop(api:TankAPI) {
     document.querySelector('#output').innerHTML = content;
   }
 
+  add_to_world(world:Composite) { 
+    Composite.add(world,this.body);
+    Composite.add(world,this.radar_body);
+    console.log(world.bodies);
+  }
   
   onUpdate(hdler:(t:Tank)=>void, skip:number = 100) {
     let count:number = 1;
@@ -137,11 +176,19 @@ export function loop(api:TankAPI) {
     Body.setVelocity(this.body,Vector.create(0,0));
     Body.setAngle(this.body,0);
     Body.setAngularSpeed(this.body, 0);
+    Body.setPosition(this.radar_body, this.body.position);
+    Body.setAngle(this.radar_body,0);
     this.code.update('');
   }
 
   update(delta_t: number) {
     Body.setAngle(this.body, limitAngle(this.body.angle));
+    Body.setPosition(this.radar_body, this.body.position);
+    this.gun_angle += this.gun_speed * delta_t;
+    this.radar_speed = this.controls.turn_radar;
+    this.radar_angle += this.radar_speed * delta_t;
+    Body.setAngle(this.radar_body, this.radar_angle);
+    
     this.left_speed = this.controls.left_track_speed;
     this.right_speed = this.controls.right_track_speed;
     let limited = Math.max(this.left_speed,this.right_speed);

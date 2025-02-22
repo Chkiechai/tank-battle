@@ -35,6 +35,8 @@ export class Game {
       options: {
         height: Game.bounds.height,
         width: Game.bounds.width,
+        showAngleIndicator:true,
+        //showAxes:true,
       }
     });
     if(!this.render) {
@@ -78,11 +80,10 @@ export class Game {
   
   add_tank(tank:Tank) {
     this.tanks.push(tank);
-    Composite.add(this.engine.world,[tank.body]);
+    tank.add_to_world(this.engine.world);
   }
   
   run() {
-    Render.run(this.render);
     this.resume();
   }
   
@@ -124,6 +125,7 @@ export class Game {
     if(!this.paused) {
       this.animation_id = requestAnimationFrame(()=>this.update());
     }
+    Render.world(this.render);
   }
 }
 
