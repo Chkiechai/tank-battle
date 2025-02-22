@@ -2,6 +2,7 @@ import {Vector as Vector} from 'matter-js';
 import {Bodies,Body,Engine} from 'matter-js';
 import { nstr,limitAngle } from './utils';
 import Script from './script';
+import { Game } from './game';
 
 type Controls = {
   turn_gun: number,
@@ -84,6 +85,7 @@ export function loop(api:TankAPI) {
   constructor(pos:Vector) {
     this.starting_pos = pos;
     this.body = Bodies.rectangle(pos.x, pos.y, Tank.length, Tank.width);
+    this.body.frictionAir = 0;
     this.max_energy = Tank.max_energy;
     this.gun_angle = 0;
     this.wheel_base = Tank.width;
@@ -119,7 +121,7 @@ export function loop(api:TankAPI) {
       count += 1;
     }
   }
- 
+
   reset() {
     Body.setPosition(this.body, this.starting_pos);
     Body.setVelocity(this.body,Vector.create(0,0));
@@ -135,9 +137,9 @@ export function loop(api:TankAPI) {
     let angle = this.body.angle;
     let velocity = Vector.mult(Vector.create(Math.cos(angle), Math.sin(angle)), (this.left_speed+this.right_speed)/2);
     Body.setAngle(this.body, limitAngle(angle + delta_angle));
-    Body.setAngularVelocity(this.body, delta_angle/delta_t);
-    Body.setPosition(this.body, Vector.add(this.body.position, Vector.mult(velocity,delta_t)));
-    Body.setVelocity(this.body, velocity);
+    Body.setAngularVelocity(this.body, delta_angle);
+    Body.setVelocity(this.body, Vector.mult(velocity,1/Game.sim_fps));
+    console.log(`body velocity: ${JSON.stringify(this.body.velocity)}, should be ${JSON.stringify(velocity)}`);
     if(this.update_handler) {
       this.update_handler(this);
     }
@@ -150,8 +152,8 @@ export function loop(api:TankAPI) {
       +` right: ${nstr(this.right_speed)}`
       +` pos=(${nstr(this.body.position.x)},${nstr(this.body.position.y)})`
       +` ang=${nstr(this.body.angle)}` 
-      +` angvel=${nstr(this.body.angularVelocity)}`
-      +` vel=(${nstr(this.body.velocity.x)},${nstr(this.body.velocity.y)})`
+      +` angvel=${nstr(this.body.angularVelocity*Game.sim_fps)}`
+      +` vel=(${nstr(this.body.velocity.x*Game.sim_fps)},${nstr(this.body.velocity.y*Game.sim_fps)})`
       ;
   }
 
@@ -169,7 +171,7 @@ export function loop(api:TankAPI) {
     
     return {
       radar_hits: rd,
-      speed: (this.left_speed+this.right_speed)/2,
+      speed: 60*(this.left_speed+this.right_speed)/2,
       direction:this.body.angle,
       gun_angle:this.gun_angle,
       radar_angle: this.radar_angle,

@@ -8,7 +8,8 @@ export class Game {
   tanks: Tank[]
   last_update: number
   animation_id:number | undefined
- 
+
+  static sim_fps = 60;
   static fixed_dt:number|undefined = 0.016;
   
   static bounds = {
@@ -48,8 +49,8 @@ export class Game {
     Events.on(this.engine, 'beforeUpdate', (event)=> {
       let engine = event.source;
       for(let tank of this.tanks) {
-        tank.control(engine.timing.lastDelta);
-        tank.update(engine.timing.lastDelta);
+        tank.control(engine.timing.lastDelta/1000.0);
+        tank.update(engine.timing.lastDelta/1000.0);
       }
     })
   }
@@ -66,23 +67,23 @@ export class Game {
 
   fixDeltaT(dt: number): number {
     if(Game.fixed_dt) {
-      return Game.fixed_dt;
+      return 1/Game.sim_fps;
     } else {
       return dt;
     }
   }
 
-  update(max_fr:number = 60) {
+  update() {
     let this_update = new Date().getTime()/1000.0;
     if(this.last_update < 0) {
-      this.last_update = this_update-1/60.;
+      this.last_update = this_update-1/Game.sim_fps;
     }
     let delta_t = this_update-this.last_update;
-    if(delta_t >= 1/max_fr) {
-      Engine.update(this.engine,this.fixDeltaT(delta_t));
-      this.last_update = new Date().getTime()/1000.0;
+    if(delta_t >= 1/Game.sim_fps) {
+      Engine.update(this.engine,this.fixDeltaT(delta_t)*1000.0); // engine wants milliseconds
+      this.last_update = new Date().getTime()/1000.0; // everything else wants seconds
     }
-    this.animation_id = requestAnimationFrame(()=>this.update(max_fr))
+    this.animation_id = requestAnimationFrame(()=>this.update())
   }
 }
 
