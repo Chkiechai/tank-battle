@@ -1,6 +1,7 @@
 
-import {Common,Events,Engine,Render,Runner,Bodies,Composite,Body,Vector} from "matter-js";
+import {Events,Engine,Render,Bodies,Composite} from "matter-js";
 import Tank from "./tank";
+
 
 export class Game {
   engine: Engine
@@ -8,6 +9,8 @@ export class Game {
   tanks: Tank[]
   last_update: number
   animation_id:number | undefined
+  output:string[]
+  paused:boolean
 
   static sim_fps = 60;
   static fixed_dt:number|undefined = 0.016;
@@ -23,6 +26,8 @@ export class Game {
     this.tanks = [];
     this.animation_id = undefined;
     this.last_update=-1;
+    this.output = [];
+    this.paused = false;
     // create a renderer
     this.render = Render.create({
       element: document.querySelector('#game'),
@@ -47,14 +52,30 @@ export class Game {
 
   register_updates() {
     Events.on(this.engine, 'beforeUpdate', (event)=> {
+      this.output=[];
       let engine = event.source;
       for(let tank of this.tanks) {
         tank.control(engine.timing.lastDelta/1000.0);
         tank.update(engine.timing.lastDelta/1000.0);
       }
+      let tank_poses=this.tanks.map((t) => t.show());
+      let out = tank_poses.join('<br/>') + '<br/>' + `${this.output.join('<br/>')}`; 
+      document.querySelector('#output').innerHTML = out;
     })
   }
 
+  println(...args:any[]):void {
+    this.output.push(args.map((s)=>{
+      if(typeof(s) == "number") {
+        return JSON.stringify(Math.floor(s*1000)/1000.0);
+      } else if(typeof(s) != "string") {
+        return JSON.stringify(s); 
+      } else {
+        return s
+      }
+    }).join(''));
+  }
+  
   add_tank(tank:Tank) {
     this.tanks.push(tank);
     Composite.add(this.engine.world,[tank.body]);
@@ -62,9 +83,22 @@ export class Game {
   
   run() {
     Render.run(this.render);
+    this.resume();
+  }
+  
+  resume() {
+    this.paused = false;
     this.animation_id = requestAnimationFrame((_:number)=>this.update())  
   }
 
+  pause() {
+    this.paused = true;
+    if(this.animation_id) {
+      cancelAnimationFrame(this.animation_id);
+      this.animation_id = undefined;
+    }
+  }
+  
   fixDeltaT(dt: number): number {
     if(Game.fixed_dt) {
       return 1/Game.sim_fps;
@@ -83,7 +117,9 @@ export class Game {
       Engine.update(this.engine,this.fixDeltaT(delta_t)*1000.0); // engine wants milliseconds
       this.last_update = new Date().getTime()/1000.0; // everything else wants seconds
     }
-    this.animation_id = requestAnimationFrame(()=>this.update())
+    if(!this.paused) {
+      this.animation_id = requestAnimationFrame(()=>this.update());
+    }
   }
 }
 

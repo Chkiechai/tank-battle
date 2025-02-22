@@ -82,7 +82,7 @@ export function loop(api:TankAPI) {
   api.setControls(controls);
 }
 `;
-  constructor(pos:Vector) {
+  constructor(pos:Vector, extra_globals: any) {
     this.starting_pos = pos;
     this.body = Bodies.rectangle(pos.x, pos.y, Tank.length, Tank.width);
     this.body.frictionAir = 0;
@@ -96,12 +96,14 @@ export function loop(api:TankAPI) {
     this.energy = this.max_energy;
     this.max_speed = 100;
     this.delta_t = 0.016;
-    this.code = new Script('', Script.addDefaultGlobals({
-      getSensors: this.getSensors.bind(this),
-      getControls: this.getControls.bind(this),
-      setControls: this.setControls.bind(this),
-      getDeltaT: this.getDeltaT.bind(this),
-    }));
+    
+    // Add globals for the tank
+    extra_globals.getSensors= this.getSensors.bind(this);
+    extra_globals.getControls= this.getControls.bind(this);
+    extra_globals.setControls= this.setControls.bind(this);
+    extra_globals.getDeltaT= this.getDeltaT.bind(this);
+    
+    this.code = new Script('', Script.addDefaultGlobals(extra_globals));
     this.controls = {
       turn_gun: 0,
       turn_radar: 0,
@@ -110,6 +112,13 @@ export function loop(api:TankAPI) {
       fire_gun: false,
     };
   }
+
+  println(...args:any[]):void {
+    let content = document.querySelector('#output').innerHTML;
+    content += `${args.map((s)=>JSON.stringify(s)).join('')}\n`;
+    document.querySelector('#output').innerHTML = content;
+  }
+
   
   onUpdate(hdler:(t:Tank)=>void, skip:number = 100) {
     let count:number = 1;
@@ -139,7 +148,6 @@ export function loop(api:TankAPI) {
     Body.setAngle(this.body, limitAngle(angle + delta_angle));
     Body.setAngularVelocity(this.body, delta_angle);
     Body.setVelocity(this.body, Vector.mult(velocity,1/Game.sim_fps));
-    console.log(`body velocity: ${JSON.stringify(this.body.velocity)}, should be ${JSON.stringify(velocity)}`);
     if(this.update_handler) {
       this.update_handler(this);
     }
@@ -171,7 +179,7 @@ export function loop(api:TankAPI) {
     
     return {
       radar_hits: rd,
-      speed: 60*(this.left_speed+this.right_speed)/2,
+      speed: Game.sim_fps*(this.left_speed+this.right_speed)/2,
       direction:this.body.angle,
       gun_angle:this.gun_angle,
       radar_angle: this.radar_angle,

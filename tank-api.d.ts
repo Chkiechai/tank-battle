@@ -5,6 +5,9 @@ export interface TankAPI {
   getSensors: () => Sensors,
   setControls: (arg0:Controls) => void,
   getDeltaT: () => number,
+  println: (...args:any[])=>void,
+  pause: ()=>void,
+  resume: ()=>void,
 }
 
 export interface Controls {
