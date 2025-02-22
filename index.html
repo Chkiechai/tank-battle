@@ -70,6 +70,7 @@
       <div class="row">
         <button id="shipCodeButton">Ship It!</button>
         <button id="pauseButton">Pause</button>
+        <button id="stepButton">Step</button>
         <button id="resumeButton">Resume</button>
         <button id="downloadButton">Download</button>
       </div>
@@ -88,6 +89,19 @@
         console.log("Imported script");
         return {setup:scr.setup, loop: scr.loop};
       });
+  }
+
+  function download(filename, text) {
+    var element = document.createElement('a');
+    element.setAttribute('href', 'data:text/javascript;base64,' + btoa(text));
+    element.setAttribute('download', filename);
+
+    element.style.display = 'none';
+    document.body.appendChild(element);
+
+    element.click();
+
+    document.body.removeChild(element);
   }
   
   </script>

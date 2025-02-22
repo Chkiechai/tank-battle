@@ -87,7 +87,11 @@ export default class Editor {
     console.log("Set shipCode handler");
     this.code_handler = handler;
   }
-
+  
+  getCode():string {
+    return this.sandbox.editor.getValue();
+  }
+  
   save() {
     console.log("Saving code...");
     let code=this.sandbox.editor.getValue();
@@ -95,6 +99,10 @@ export default class Editor {
     this.saveBackup(code)
   }
 
+  contentHash():number {
+    return MurmurHash3(this.getCode()).result();
+  }
+  
   loadSaved():string|null {
     console.log("loading...");
     return localStorage.getItem("com.ginosterous.tank-battle.code.shipped");

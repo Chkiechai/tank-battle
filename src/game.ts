@@ -91,6 +91,10 @@ export class Game {
     this.animation_id = requestAnimationFrame((_:number)=>this.update())  
   }
 
+  step() {
+    this.animation_id = requestAnimationFrame((_:number)=>this.update()) 
+  }
+  
   pause() {
     this.paused = true;
     if(this.animation_id) {
