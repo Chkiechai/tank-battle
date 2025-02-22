@@ -68,12 +68,13 @@ export default class Tank{
   static width:number = 20
   static length:number = 25 
   static max_energy: 100 
+  static max_speed:number = 200
   static default_code = `
 import {TankAPI,Controls,Sensors} from './tank-api';
+
 export function setup() {
 
 }
-
 
 export function loop(api:TankAPI) {
   let controls = api.getControls();
@@ -138,14 +139,20 @@ export function loop(api:TankAPI) {
     Body.setAngularSpeed(this.body, 0);
     this.code.update('');
   }
-  
+
   update(delta_t: number) {
+    Body.setAngle(this.body, limitAngle(this.body.angle));
     this.left_speed = this.controls.left_track_speed;
     this.right_speed = this.controls.right_track_speed;
+    let limited = Math.max(this.left_speed,this.right_speed);
+    if(limited > Tank.max_speed) {
+      console.log(`WARNING: limiting tank speed to ${Tank.max_speed}, requested speed was ${limited}`);
+      this.left_speed *= Tank.max_speed/limited;
+      this.right_speed *= Tank.max_speed/limited;
+    }
     let delta_angle = (this.left_speed - this.right_speed)*delta_t / this.wheel_base;
     let angle = this.body.angle;
     let velocity = Vector.mult(Vector.create(Math.cos(angle), Math.sin(angle)), (this.left_speed+this.right_speed)/2);
-    Body.setAngle(this.body, limitAngle(angle + delta_angle));
     Body.setAngularVelocity(this.body, delta_angle);
     Body.setVelocity(this.body, Vector.mult(velocity,1/Game.sim_fps));
     if(this.update_handler) {
