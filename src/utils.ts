@@ -29,6 +29,7 @@ export function setw(str:string, width: number): string {
   return (str+space).slice(0,width);
 }
 
+// BUG: I think this function is returning garbage, need to test it.
 export function angleRelativeTo(my_angle:number, relative_to:number):number {
   let diff = limitAngle(my_angle - relative_to);
   if(diff > Math.PI) {

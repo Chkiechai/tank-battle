@@ -26,3 +26,5 @@ export class Ray {
     return Vector.add(other.origin, Vector.mult(other.direction, s));
   }
 }
+
+
