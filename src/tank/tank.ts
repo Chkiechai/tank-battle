@@ -1,9 +1,9 @@
 import {Composite, Vector as Vector, Vertices} from 'matter-js';
 import {Bodies,Body,Engine} from 'matter-js';
-import { nstr,limitAngle } from './utils';
+import { nstr, setw} from '../utils/string';
+import { limitAngle, angleRelativeTo } from '../utils/math';
 import Script from './script';
-import { Game } from './game';
-import {clamp,setw,angleRelativeTo} from './utils';
+import { Game } from '../game';
 import {Radar,RadarData} from './radar';
 import { Turret } from './turret';
 

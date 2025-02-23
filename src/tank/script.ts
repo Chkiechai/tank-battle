@@ -1,5 +1,4 @@
 import {Vector} from 'matter-js';
-//import script_loader from './script_loader';
 
 export default class Script{
   js_code: undefined | ((env:{[key:string]:any})=>void)

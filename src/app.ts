@@ -1,6 +1,6 @@
 
 import {Vector} from "matter-js";
-import Tank from "./tank";
+import Tank from "./tank/tank";
 import { Game } from "./game";
 import Editor from "./editor";
 declare function download(filename:string,content:string):void;

@@ -1,7 +1,7 @@
 
 import {Events,Engine,Render,Bodies,Composite, Vector} from "matter-js";
-import Tank from "./tank";
-import { Ray } from "./math";
+import Tank from "./tank/tank";
+import { Ray } from "./utils/math";
 
 export class Game {
   engine: Engine

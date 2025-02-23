@@ -1,8 +1,8 @@
 import { Bodies, Body, Pair, Vector } from "matter-js"
-import {Game} from "./game";
+import {Game} from "../game";
 import Tank from "./tank";
-import {clamp,limitAngle, nstr} from "./utils";
-import { Ray } from "./math";
+import {nstr} from "../utils/string";
+import { clamp,limitAngle, Ray } from "../utils/math";
 
 export type RadarData = {
   wall: number,
