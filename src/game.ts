@@ -18,7 +18,16 @@ export class Game {
   // velocity and other change calculations *per frame* NOT per second, so this is used
   // to map the numbers to something more usable.
   static fixed_dt:number|undefined = 0.016;
- 
+
+  static RadarCollisionFilter:number = 1;
+  static BulletCollisionFilter:number = 1<<1;
+  static WallCollisionfilter:number = 1<<2;
+
+  // Return the collision filter mask for the team number provided. Team numbers should
+  // range from 0..28
+  static teamCollisionFilter(team:number):number {
+    return 1<<(team+3);
+  }
   // The size of the arena
   static bounds = {
     width:800,

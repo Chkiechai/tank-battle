@@ -69,6 +69,7 @@ export default class Tank{
   radar_body: Body
   turret_body: Body
   radar_verts: Vertices
+  team_id: number
   
   static min_turn_angle: number=0.00001
   static width:number = 20
@@ -93,7 +94,8 @@ export function loop(api:TankAPI) {
   api.setControls(controls);
 }
 `;
-  constructor(pos:Vector, extra_globals: any) {
+  constructor(team_id:number, pos:Vector, extra_globals: any) {
+    this.team_id = team_id;
     this.starting_pos = pos;
     this.body = Bodies.rectangle(pos.x, pos.y, Tank.length, Tank.width,{label:"Tank Body"});
     this.body.frictionAir = 0;
