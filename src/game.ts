@@ -36,7 +36,6 @@ export class Game {
         height: Game.bounds.height,
         width: Game.bounds.width,
         showAngleIndicator:true,
-        //showAxes:true,
       }
     });
     if(!this.render) {
@@ -44,11 +43,12 @@ export class Game {
     }
     
     Composite.add(this.engine.world,[
-      Bodies.rectangle(0,Game.bounds.height/2,1,Game.bounds.height,{isStatic:true}),
-      Bodies.rectangle(Game.bounds.width/2,0,Game.bounds.width, 1,{isStatic:true}),
-      Bodies.rectangle(Game.bounds.width/2,Game.bounds.height, Game.bounds.width, 1,{isStatic:true}),
-      Bodies.rectangle(Game.bounds.width, Game.bounds.height/2, 1,Game.bounds.height,{isStatic:true}),
+      Bodies.rectangle(0,Game.bounds.height/2,1,Game.bounds.height,{isStatic:true,label:"wall.left"}),
+      Bodies.rectangle(Game.bounds.width/2,0,Game.bounds.width, 1,{isStatic:true,label:"wall.top"}),
+      Bodies.rectangle(Game.bounds.width/2,Game.bounds.height, Game.bounds.width, 1,{isStatic:true,label:"wall.bottom"}),
+      Bodies.rectangle(Game.bounds.width, Game.bounds.height/2, 1,Game.bounds.height,{isStatic:true,label:"wall.right"}),
     ]);
+
     this.register_updates();
   }
 

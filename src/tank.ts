@@ -66,6 +66,7 @@ export default class Tank{
   update_handler:undefined|((t:Tank)=>void) = undefined
   starting_pos: Vector
   radar_body: Body
+  turret_body: Body
   radar_verts: Vertices
   
   static min_turn_angle: number=0.00001
@@ -122,16 +123,34 @@ export function loop(api:TankAPI) {
         label:"radar",
         isSensor:true,
         render:{
+          visible:false,
           opacity: 0.5,
           fillStyle: '#fff',
           lineWidth: 0,
         }
       });
+    
     this.radar_body.frictionAir = 0;
     Body.setCentre(this.radar_body, Vector.create(this.radar_body.bounds.min.x+1,0));
     Body.setPosition(this.radar_body, this.body.position);
     this.radar_body.render.fillStyle = '#fff';
-    
+    let barrel = Bodies.rectangle(15,0,18,2,{
+      isSensor:true,
+    });
+    this.turret_body = Body.create({isSensor:true});
+    let turret = Bodies.rectangle(0,0,12,9,{
+      label:"turret",
+      isSensor:true,
+      render:{
+        opacity:1,
+        fillStyle: '#141',
+        visible:true,
+      }
+    });
+    Body.setParts(this.turret_body,[turret,barrel]);
+    Body.setCentre(this.turret_body, Vector.create(this.turret_body.bounds.min.x+6,0));
+     
+  
     // Add globals for the tank
     extra_globals.getSensors= this.getSensors.bind(this);
     extra_globals.getControls= this.getControls.bind(this);
@@ -157,9 +176,10 @@ export function loop(api:TankAPI) {
   add_to_world(world:Composite) { 
     Composite.add(world,this.body);
     Composite.add(world,this.radar_body);
+    Composite.add(world,this.turret_body);
     console.log(world.bodies);
   }
-  
+
   onUpdate(hdler:(t:Tank)=>void, skip:number = 100) {
     let count:number = 1;
     let self = this;
@@ -184,11 +204,16 @@ export function loop(api:TankAPI) {
   update(delta_t: number) {
     Body.setAngle(this.body, limitAngle(this.body.angle));
     Body.setPosition(this.radar_body, this.body.position);
-    this.gun_angle += this.gun_speed * delta_t;
+  
     this.radar_speed = this.controls.turn_radar;
     this.radar_angle += this.radar_speed * delta_t;
     Body.setAngle(this.radar_body, this.radar_angle);
-    
+  
+    this.gun_speed = this.controls.turn_gun;
+    this.gun_angle += this.gun_speed * delta_t;
+    Body.setPosition(this.turret_body,this.body.position);
+    Body.setAngle(this.turret_body, this.body.angle+this.gun_angle);
+
     this.left_speed = this.controls.left_track_speed;
     this.right_speed = this.controls.right_track_speed;
     let limited = Math.max(this.left_speed,this.right_speed);
