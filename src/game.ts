@@ -12,14 +12,19 @@ export class Game {
   output:string[]
   paused:boolean
 
+  // The target frames per second for the physics simulation
   static sim_fps = 60;
+  // This is the number of seconds per timestep. The physics simulation does all of its
+  // velocity and other change calculations *per frame* NOT per second, so this is used
+  // to map the numbers to something more usable.
   static fixed_dt:number|undefined = 0.016;
-  
+ 
+  // The size of the arena
   static bounds = {
     width:800,
     height: 600,
   }
-  
+
   constructor() {
     this.engine = Engine.create();
     this.engine.gravity.scale = 0;
@@ -52,6 +57,7 @@ export class Game {
     this.register_updates();
   }
 
+  // Connect the physics engine updates to the game state so the tanks get updated.
   register_updates() {
     Events.on(this.engine, 'beforeUpdate', (event)=> {
       this.output=[];
@@ -60,12 +66,13 @@ export class Game {
         tank.control(engine.timing.lastDelta/1000.0);
         tank.update(engine.timing.lastDelta/1000.0);
       }
-      let tank_poses=this.tanks.map((t) => t.show());
-      let out = tank_poses.join('<br/>') + '<br/>' + `${this.output.join('<br/>')}`; 
+      let tank_poses = this.tanks.map((t) => t.show());
+      let out = '<pre>' +tank_poses.join('\n') + '\n' + `${this.output.join('\n')}`+'</pre>'; 
       document.querySelector('#output').innerHTML = out;
     })
   }
 
+  // Add a line to the output view. Lines are replace each frame.
   println(...args:any[]):void {
     this.output.push(args.map((s)=>{
       if(typeof(s) == "number") {
@@ -77,25 +84,30 @@ export class Game {
       }
     }).join(''));
   }
-  
+
+  // add a tank to the arena.
   add_tank(tank:Tank) {
     this.tanks.push(tank);
     tank.add_to_world(this.engine.world);
   }
-  
+
+  // Run the simulation until the next pause is called
   run() {
     this.resume();
   }
-  
+
+  // Continue after a pause (or start)
   resume() {
     this.paused = false;
     this.animation_id = requestAnimationFrame((_:number)=>this.update())  
   }
 
+  // Single-step one frame of the world.
   step() {
     this.animation_id = requestAnimationFrame((_:number)=>this.update()) 
   }
-  
+
+  // Stop the animation to allow single-stepping.
   pause() {
     this.paused = true;
     if(this.animation_id) {
@@ -103,7 +115,9 @@ export class Game {
       this.animation_id = undefined;
     }
   }
-  
+
+  // This just replaces the real-time delta_t with the fixed timestep if that's configured by
+  // setting Game.fixed_dt
   fixDeltaT(dt: number): number {
     if(Game.fixed_dt) {
       return 1/Game.sim_fps;
@@ -112,6 +126,8 @@ export class Game {
     }
   }
 
+  // This is where the engine's update function is called as a result of requestAnimationFrame. The
+  // actual game updates happen in the handler from Game.register_updates.
   update() {
     let this_update = new Date().getTime()/1000.0;
     if(this.last_update < 0) {

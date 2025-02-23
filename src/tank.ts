@@ -3,6 +3,7 @@ import {Bodies,Body,Engine} from 'matter-js';
 import { nstr,limitAngle } from './utils';
 import Script from './script';
 import { Game } from './game';
+import {clamp,setw} from './utils';
 
 type Controls = {
   turn_gun: number,
@@ -10,6 +11,7 @@ type Controls = {
   left_track_speed: number,
   right_track_speed: number,
   fire_gun: boolean,
+  show_radar: boolean,
 }
 
 type RadarData = {
@@ -37,16 +39,15 @@ type Sensors = {
 }
 
 // Questions:
-//   - How do I make this thing have collision detection?
-//   - What should I do when a collision happens? move and slide? crash?
-//   - Should tanks be able to push each other around?
-//   - Should the drives be applying forces instead of just setting speeds?
+//   - How do I make this thing have collision detection? - use Body isSensor
+//   - What should I do when a collision happens? move and slide? crash? - move and slide, for now. 
+//   - Should tanks be able to push each other around? - yes
+//   - Should the drives be applying forces instead of just setting speeds? - no, not for now. Set speeds, it's easier.
 //
-// I could model this as a rigid body that has collisions, and use forces as a thrust
-// on each wheel. If I do that, I need to implement a sideways friction force that 
-// prevents the tanks from sliding sideways (maybe with a limit, so they can drift?).
-// I could just directly cancel all velocity that is not along the axis of motion, 
-// effectively giving the tank infinite traction.
+// The Tank has a radar, a gun, a body, and some code. The code is provided by the player
+// to control the rest of it. See the tank-api.ts file for details about what's in the 
+// sensors and controls.
+
 export default class Tank{
   wheel_base:number
   gun_angle: number
@@ -109,6 +110,8 @@ export function loop(api:TankAPI) {
     this.gun_speed = 0;
     this.radar_speed = 0;
     this.radar_angle = 0;
+
+    // Make the radar intersection shape (a circular-ish sector)
     let half_ms = Tank.max_radar_speed/(2*Game.sim_fps);
     let verts = [
         [0,-Math.sin(half_ms)/3],
@@ -122,18 +125,19 @@ export function loop(api:TankAPI) {
       {
         label:"radar",
         isSensor:true,
-        render:{
+        render:{ // this doesn't seem to work at all, so I need to investigate.
           visible:false,
           opacity: 0.5,
           fillStyle: '#fff',
           lineWidth: 0,
         }
       });
-    
     this.radar_body.frictionAir = 0;
     Body.setCentre(this.radar_body, Vector.create(this.radar_body.bounds.min.x+1,0));
     Body.setPosition(this.radar_body, this.body.position);
     this.radar_body.render.fillStyle = '#fff';
+
+    // The next section builds a turret shape that can rotate as parr of the tank.
     let barrel = Bodies.rectangle(15,0,18,2,{
       isSensor:true,
     });
@@ -164,15 +168,13 @@ export function loop(api:TankAPI) {
       left_track_speed: 0,
       right_track_speed: 0,
       fire_gun: false,
+      show_radar: true,
     };
   }
 
-  println(...args:any[]):void {
-    let content = document.querySelector('#output').innerHTML;
-    content += `${args.map((s)=>JSON.stringify(s)).join('')}\n`;
-    document.querySelector('#output').innerHTML = content;
-  }
 
+  // Add this tank to the world, along with its other body pieces. There might be
+  // a better way to do this using parts.
   add_to_world(world:Composite) { 
     Composite.add(world,this.body);
     Composite.add(world,this.radar_body);
@@ -180,17 +182,19 @@ export function loop(api:TankAPI) {
     console.log(world.bodies);
   }
 
-  onUpdate(hdler:(t:Tank)=>void, skip:number = 100) {
+  // Add a hook to do something whenever the tank is updated. This isn't currently used.
+  onUpdate(hndler:(t:Tank)=>void, skip:number = 100) {
     let count:number = 1;
     let self = this;
     this.update_handler = ()=>{
       if(count % skip == 0) {
-        hdler(this);
+        hndler(this);
       }
       count += 1;
     }
   }
 
+  // Put the toys back where they started.
   reset() {
     Body.setPosition(this.body, this.starting_pos);
     Body.setVelocity(this.body,Vector.create(0,0));
@@ -198,18 +202,22 @@ export function loop(api:TankAPI) {
     Body.setAngularSpeed(this.body, 0);
     Body.setPosition(this.radar_body, this.body.position);
     Body.setAngle(this.radar_body,0);
+    Body.setAngle(this.turret_body, 0);
     this.code.update('');
   }
 
+  // Go through all of the controls and update the tank properties based on 
+  // what the code says to do.
   update(delta_t: number) {
+    this.radar_body.render.visible = this.controls.show_radar;
     Body.setAngle(this.body, limitAngle(this.body.angle));
     Body.setPosition(this.radar_body, this.body.position);
   
-    this.radar_speed = this.controls.turn_radar;
+    this.radar_speed = clamp(this.controls.turn_radar, -Tank.max_radar_speed, Tank.max_radar_speed);
     this.radar_angle += this.radar_speed * delta_t;
     Body.setAngle(this.radar_body, this.radar_angle);
   
-    this.gun_speed = this.controls.turn_gun;
+    this.gun_speed = clamp(this.controls.turn_gun, -Tank.max_gun_speed, Tank.max_gun_speed);
     this.gun_angle += this.gun_speed * delta_t;
     Body.setPosition(this.turret_body,this.body.position);
     Body.setAngle(this.turret_body, this.body.angle+this.gun_angle);
@@ -232,15 +240,15 @@ export function loop(api:TankAPI) {
     }
   }
 
-  
+  // Put some diagnostics up about the tank's motion properties
   show():string {
     return `Tank pose: `
-      +` left: ${nstr(this.left_speed)}`
-      +` right: ${nstr(this.right_speed)}`
-      +` pos=(${nstr(this.body.position.x)},${nstr(this.body.position.y)})`
-      +` ang=${nstr(this.body.angle)}` 
-      +` angvel=${nstr(this.body.angularVelocity*Game.sim_fps)}`
-      +` vel=(${nstr(this.body.velocity.x*Game.sim_fps)},${nstr(this.body.velocity.y*Game.sim_fps)})`
+      +` left: ${setw(nstr(this.left_speed),4)}`
+      +` right: ${setw(nstr(this.right_speed),4)}`
+      +` ang=${setw(nstr(this.body.angle),4)}` 
+      +` angvel=${setw(nstr(this.body.angularVelocity*Game.sim_fps),4)}`
+      + setw(` vel=(${Math.round(this.body.velocity.x*Game.sim_fps)},${Math.round(this.body.velocity.y*Game.sim_fps)})`, 15)
+      + setw(` pos=(${Math.round(this.body.position.x)},${Math.round(this.body.position.y)})`, 15)
       ;
   }
 

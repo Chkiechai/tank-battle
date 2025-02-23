@@ -13,3 +13,18 @@ export function limitAngle(angle:number):number {
 export function nstr(n:number):string {
   return ''+Math.round(n*1000)/1000.0
 }
+
+export function clamp(value:number, min:number, max:number) : number {
+  if(value < min) {
+    return min;
+  } else if(value > max) {
+    return max;
+  } else {
+    return value;
+  }
+}
+
+export function setw(str:string, width: number): string {
+  let space=' '.repeat(width);
+  return (str+space).slice(0,width);
+}
