@@ -1,7 +1,7 @@
 
-import {Events,Engine,Render,Bodies,Composite} from "matter-js";
+import {Events,Engine,Render,Bodies,Composite, Vector} from "matter-js";
 import Tank from "./tank";
-
+import { Ray } from "./math";
 
 export class Game {
   engine: Engine
@@ -33,7 +33,14 @@ export class Game {
     width:800,
     height: 600,
   }
-
+  
+  static WallRays = {
+    "wall.left": new Ray(Vector.create(0,0), Vector.create(0,1)),
+    "wall.top": new Ray(Vector.create(Game.bounds.width/2, 0), Vector.create(1,0)),
+    "wall.right": new Ray(Vector.create(Game.bounds.width, 0), Vector.create(0,1)),
+    "wall.bottom": new Ray(Vector.create(Game.bounds.width/2,Game.bounds.height), Vector.create(-1,0)),
+  }
+  
   constructor() {
     this.engine = Engine.create();
     this.engine.gravity.scale = 0;
@@ -55,19 +62,25 @@ export class Game {
     if(!this.render) {
       throw new Error("Couldn't build a renderer!");
     }
-    
-    Composite.add(this.engine.world,[
+    let walls = [
       Bodies.rectangle(0,Game.bounds.height/2,1,Game.bounds.height,{isStatic:true,label:"wall.left"}),
       Bodies.rectangle(Game.bounds.width/2,0,Game.bounds.width, 1,{isStatic:true,label:"wall.top"}),
       Bodies.rectangle(Game.bounds.width/2,Game.bounds.height, Game.bounds.width, 1,{isStatic:true,label:"wall.bottom"}),
       Bodies.rectangle(Game.bounds.width, Game.bounds.height/2, 1,Game.bounds.height,{isStatic:true,label:"wall.right"}),
-    ]);
+    ];
+    for(let wall of walls) {
+      wall.collisionFilter.category = Game.WallCollisionfilter;
+      wall.collisionFilter.group = -1;
+      wall.collisionFilter.mask = ~Game.WallCollisionfilter;
+    } 
+    Composite.add(this.engine.world,walls);
 
     this.register_updates();
   }
 
   // Connect the physics engine updates to the game state so the tanks get updated.
   register_updates() {
+    // Update the controls before the step starts
     Events.on(this.engine, 'beforeUpdate', (event)=> {
       this.output=[];
       let engine = event.source;
@@ -75,12 +88,28 @@ export class Game {
         tank.control(engine.timing.lastDelta/1000.0);
         tank.update(engine.timing.lastDelta/1000.0);
       }
-      let tank_poses = this.tanks.map((t) => t.show());
-      let out = '<pre>' +tank_poses.join('\n') + '\n' + `${this.output.join('\n')}`+'</pre>'; 
-      document.querySelector('#output').innerHTML = out;
+    });
+    // Update the output window after the step is finished.
+    //Events.on(this.engine, 'afterUpdate', (event)=>{
+    //  let tank_poses = this.tanks.map((t) => t.show());
+    //  let out = '<pre>' +tank_poses.join('\n') + '\n' + `${this.output.join('\n')}`+'</pre>'; 
+    //  document.querySelector('#output').innerHTML = out;
+    //});
+
+    // Process collision events.
+    Events.on(this.engine, 'collisionActive', (event)=>{
+      for(let tank of this.tanks) {
+        tank.radar.scan(event.pairs);
+      }   
     })
   }
 
+  updateOutput() {
+    let tank_poses = this.tanks.map((t) => t.show());
+    let out = '<pre>' +tank_poses.join('\n') + '\n' + `${this.output.join('\n')}`+'</pre>'; 
+    document.querySelector('#output').innerHTML = out;
+  } 
+  
   // Add a line to the output view. Lines are replace each frame.
   println(...args:any[]):void {
     this.output.push(args.map((s)=>{
@@ -151,6 +180,7 @@ export class Game {
       this.animation_id = requestAnimationFrame(()=>this.update());
     }
     Render.world(this.render);
+    this.updateOutput();
   }
 }
 

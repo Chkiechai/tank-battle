@@ -13,14 +13,20 @@ let game = new Game();
 document.querySelector('#pauseButton').addEventListener('click', ()=>game.pause());
 document.querySelector('#stepButton').addEventListener('click', ()=>game.step());
 document.querySelector('#resumeButton').addEventListener('click', ()=>game.resume())
+let api_globals = { 
+  println:game.println.bind(game),
+  pause: game.pause.bind(game),
+  resume: game.resume.bind(game),
+  // can't see how this could be used, but then again, it is very small...
+  // Even the wisest cannot see all ends.
+  step: game.step.bind(game),
+};
 
-let tank = new Tank(Vector.create(200,200),
-  {
-    println:game.println.bind(game),
-    pause: game.pause.bind(game),
-    resume: game.resume.bind(game),
-    step: game.step.bind(game),// can't see how this could be used, but then I can't see all ends...
-  });
+let tank = new Tank(
+  0, // team_id
+  Vector.create(200,200), // Position
+  api_globals // Extra global functions for the API
+);
 
 tank.onUpdate((self)=>element.innerHTML=`<p>${self.show()}</p>`, 10);
 

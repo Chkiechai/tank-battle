@@ -1,4 +1,5 @@
 import {Vector} from 'matter-js';
+export {Vector} from 'matter-js';
 
 export interface TankAPI {
   getControls: () => Controls,
@@ -20,7 +21,7 @@ export interface Controls {
 }
 
 export interface RadarData  {
-  wall: boolean,
+  wall: number,
   enemies: RadarHit[],
   allies: RadarHit[],
   bullets: RadarHit[],

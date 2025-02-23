@@ -3,7 +3,7 @@
 // limit the angle to the range 0...2pi
 export function limitAngle(angle:number):number {
   let shrunk = angle/(2*Math.PI);
-  let new_angle = angle - Math.floor(shrunk)*2*Math.PI;
+  let new_angle = angle - Math.trunc(shrunk)*2*Math.PI;
   if(new_angle < 0) {
     new_angle += 2 * Math.PI;
   }
@@ -27,4 +27,12 @@ export function clamp(value:number, min:number, max:number) : number {
 export function setw(str:string, width: number): string {
   let space=' '.repeat(width);
   return (str+space).slice(0,width);
+}
+
+export function angleRelativeTo(my_angle:number, relative_to:number):number {
+  let diff = limitAngle(my_angle - relative_to);
+  if(diff > Math.PI) {
+    diff -= 2*Math.PI;
+  }
+  return diff;
 }
