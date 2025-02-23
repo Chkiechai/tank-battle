@@ -99,7 +99,7 @@ export function loop(api:TankAPI) {
     this.body.collisionFilter.mask = 0xffffffff;
     this.body.collisionFilter.group = 0;
     
-    // The next section builds a turret shape that can rotate as parr of the tank.
+    // The next section builds a turret shape that can rotate as part of the tank.
     this.turret_body = Body.create({
       label: "turret",
       isSensor:true,
