@@ -5,6 +5,7 @@ import Script from './script';
 import { Game } from './game';
 import {clamp,setw,angleRelativeTo} from './utils';
 import {Radar,RadarData} from './radar';
+import { Turret } from './turret';
 
 export type Controls = {
   turn_gun: number,
@@ -37,10 +38,8 @@ export type Sensors = {
 
 export default class Tank{
   wheel_base:number
-  gun_angle: number
   energy: number
   gun_charge: number
-  gun_speed: number
   left_speed: number
   right_speed: number
   max_energy: number 
@@ -51,9 +50,9 @@ export default class Tank{
   controls: Controls
   update_handler:undefined|((t:Tank)=>void) = undefined
   starting_pos: Vector
-  turret_body: Body
   team_id: number
   radar: Radar
+  turret: Turret
   
   static min_turn_angle: number=0.00001
   static width:number = 20
@@ -84,7 +83,6 @@ export function loop(api:TankAPI) {
     this.body = Bodies.rectangle(pos.x, pos.y, Tank.length, Tank.width,{label:"Tank Body"});
     this.body.frictionAir = 0;
     this.max_energy = Tank.max_energy;
-    this.gun_angle = 0;
     this.wheel_base = Tank.width;
     Body.setAngle(this.body,0);
     this.gun_charge = 1;
@@ -93,34 +91,12 @@ export function loop(api:TankAPI) {
     this.energy = this.max_energy;
     this.max_speed = 100;
     this.delta_t = 0.016;
-    this.gun_speed = 0;
     this.radar = new Radar(this);
     this.body.collisionFilter.category = Game.teamCollisionFilter(this.team_id);
     this.body.collisionFilter.mask = 0xffffffff;
     this.body.collisionFilter.group = 0;
+    this.turret = new Turret(this);
     
-    // The next section builds a turret shape that can rotate as part of the tank.
-    this.turret_body = Body.create({
-      label: "turret",
-      isSensor:true,
-      collisionFilter:{
-        category:0,
-        mask:0,
-        group:-10,
-      },
-      render:{
-        opacity:1,
-        fillStyle: '#141',
-        visible:true,
-      }
-
-    });
-    let turret = Bodies.rectangle(0,0,12,9);
-    let barrel = Bodies.rectangle(15,0,18,2);
-    Body.setParts(this.turret_body,[turret,barrel]);
-    Body.setCentre(this.turret_body, Vector.create(this.turret_body.bounds.min.x+6,0));
-
-  
     // Add globals for the tank
     extra_globals.getSensors= this.getSensors.bind(this);
     extra_globals.getControls= this.getControls.bind(this);
@@ -148,8 +124,7 @@ export function loop(api:TankAPI) {
   add_to_world(world:Composite) { 
     Composite.add(world,this.body);
     Composite.add(world, this.radar.collision_shape);
-    Composite.add(world,this.turret_body);
-    console.log(world.bodies);
+    Composite.add(world,this.turret.shape);
   }
 
   // Add a hook to do something whenever the tank is updated. This isn't currently used.
@@ -171,7 +146,7 @@ export function loop(api:TankAPI) {
     Body.setAngle(this.body,0);
     Body.setAngularSpeed(this.body, 0);
     this.radar.reset();
-    Body.setAngle(this.turret_body, 0);
+    this.turret.reset();
     this.code.update('');
   }
 
@@ -180,11 +155,7 @@ export function loop(api:TankAPI) {
   update(delta_t: number) {
     Body.setAngle(this.body, limitAngle(this.body.angle));
     this.radar.update(delta_t, this); 
-  
-    this.gun_speed = clamp(this.controls.turn_gun, -Tank.max_gun_speed, Tank.max_gun_speed);
-    this.gun_angle = limitAngle(this.gun_angle + this.gun_speed * delta_t);
-    Body.setPosition(this.turret_body,this.body.position);
-    Body.setAngle(this.turret_body, this.body.angle+this.gun_angle);
+    this.turret.update(delta_t, this); 
 
     this.left_speed = this.controls.left_track_speed;
     this.right_speed = this.controls.right_track_speed;
@@ -225,7 +196,7 @@ export function loop(api:TankAPI) {
       radar_hits: this.radar.get_hits(),
       speed: Game.sim_fps*(this.left_speed+this.right_speed)/2,
       direction:this.body.angle,
-      gun_angle: angleRelativeTo(this.gun_angle, 0),
+      gun_angle: angleRelativeTo(this.turret.get_angle(), 0),
       radar_angle: angleRelativeTo(this.radar.angle(),this.body.angle),
       energy: this.energy,
       impact: false,

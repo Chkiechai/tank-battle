@@ -10,12 +10,14 @@ export class Turret {
   turn_speed: number // speed of rotation
   shape: Body
   tank_id: number // maybe used to mark bullets
+  angle: number
   
   static max_turn_speed: number = Math.PI // fastest allowed turning speed
   
   constructor(tank: Tank) {
     this.turn_speed = 0;
     this.tank_id = tank.id();
+    this.angle = 0;
     this.setup_shape(tank.body.position);
   }
 
@@ -40,6 +42,7 @@ export class Turret {
     let barrel = Bodies.rectangle(15,0,18,2);
     Body.setParts(this.shape,[turret,barrel]);
     Body.setCentre(this.shape, Vector.create(this.shape.bounds.min.x+6,0));
+    Body.setPosition(this.shape,pos);
   }
 
   reset() {
@@ -47,43 +50,14 @@ export class Turret {
     this.turn_speed = 0;
   }
   
-  update(delta_t:number,tank:Tank) {
-    this.turn_speed = clamp(
-      tank.controls.turn_radar, 
-      -Turret.max_turn_speed, 
-      Turret.max_turn_speed);
-    let angle = limitAngle(this.shape.angle + this.turn_speed * delta_t);
-    Body.setAngle(this.shape,angle);
-    Body.setPosition(this.shape, tank.body.position);
-    //this.set_visible(tank.controls.show_radar);
-    this.set_visible(true);
-    console.log("Radar angle: ", nstr((this.shape.angle)));
-  }
-  
-  set_visible(vis:boolean) {
-    this.shape.render.visible = vis;   
-  }
-
-  same_team(body:Body):boolean {
-    return (
-      Game.teamCollisionFilter(this.team_id) 
-      & Game.teamCollisionFilter(body.collisionFilter.category)) 
-      != 0;
-  }
-
   update(delta_t:number, tank:Tank) {
     this.turn_speed = clamp(tank.controls.turn_gun, -Tank.max_gun_speed, Tank.max_gun_speed);
-    let angle = limitAngle(this.shape.angle + this.turn_speed * delta_t);
+    this.angle = limitAngle(this.angle + this.turn_speed * delta_t);
     Body.setPosition(this.shape,tank.body.position);
-    Body.setAngle(this.shape, tank.body.angle+angle);
+    Body.setAngle(this.shape, limitAngle(tank.body.angle+this.angle));
   }
   
-  angle():number {
-    return this.shape.angle;
+  get_angle():number {
+    return this.angle;
   }
-  
-  get_hits():RadarData {
-    return this.hits;
-  }
-}
 }
