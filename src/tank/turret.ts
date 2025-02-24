@@ -1,10 +1,8 @@
 
   
-import { Bodies, Body, Pair, Vector } from "matter-js"
-import {Game} from "./game";
+import { Bodies, Body, Vector } from "matter-js"
 import Tank from "./tank";
-import {clamp,limitAngle, nstr} from "./utils";
-import { Ray } from "./math";
+import {clamp,limitAngle } from "../utils/math";
 
 export class Turret {
   turn_speed: number // speed of rotation
