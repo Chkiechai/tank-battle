@@ -93,8 +93,7 @@ export class Radar {
     let angle = limitAngle(this.collision_shape.angle + this.turn_speed * delta_t);
     Body.setAngle(this.collision_shape,angle);
     Body.setPosition(this.collision_shape, tank.body.position);
-    //this.set_visible(tank.controls.show_radar);
-    this.set_visible(true);
+    this.set_visible(tank.controls.show_radar);
     console.log("Radar angle: ", nstr((this.collision_shape.angle)));
   }
   
@@ -132,7 +131,7 @@ export class Radar {
         case Game.RadarCollisionFilter:
           throw new Error("Radar beams should not be colliding");
         case Game.WallCollisionfilter:
-          this.set_visible(true);
+          //this.set_visible(true);
           let ray = Game.WallRays[body.label];
           let ray_dar = new Ray(
             this.collision_shape.position, 
@@ -144,7 +143,7 @@ export class Radar {
           }
           break;
         case Game.BulletCollisionFilter:
-          this.set_visible(true);
+          //this.set_visible(true);
           result.bullets.push({
             distance: Vector.magnitude(Vector.sub(body.position,this.collision_shape.position)),
             angle:Vector.angle(Vector.create(1,0), body.position),
@@ -154,7 +153,7 @@ export class Radar {
           break;
         default:
           if(body.id != this.tank_id) {
-            this.set_visible(true);
+            //this.set_visible(true);
             console.log("WARNING: Radar Hit returning zero energy, need to figure out how to look up tank from body");
             let res:RadarHit = {
               distance:Vector.magnitude(Vector.sub(body.position,this.collision_shape.position)),

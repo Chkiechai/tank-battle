@@ -1,9 +1,19 @@
 import {Vector} from 'matter-js';
+import {TankAPI} from '../../tank-api';
+
+declare class TankCode {
+  update(api:TankAPI):void
+}
+interface JsModule {
+  setup():TankCode
+}
 
 export default class Script{
-  js_code: undefined | ((env:{[key:string]:any})=>void)
-  globals: {[key:string]:any}
-
+  js_module: JsModule
+  runner: TankCode
+  globals: TankAPI
+  
+  
   static addDefaultGlobals(extras:{[key:string]:any}): {[key:string]:any} {
     let globals = {};
     globals['log'] = console.log;
@@ -21,7 +31,7 @@ export default class Script{
   }
   
   constructor(js_code:string,globals=Script.addDefaultGlobals({})) {
-    this.globals = globals;
+    this.globals = globals as TankAPI;
     this.update(js_code);
   }
 
@@ -30,15 +40,15 @@ export default class Script{
     this.scriptImport(js_code)
       .then((module:any) => {
         console.log("Calling setup now..."+module);
-        module.setup();
-        self.js_code = module.loop;
+        self.runner = module.setup(self.globals);
+        self.js_module = module;
       })
     .catch((e)=>console.log("Error loading script: "+e));
   }
   
   execute() {
-    if(typeof(this.js_code) == 'function') {
-      this.js_code(this.globals);
+    if(typeof(this.runner) == 'object') {
+      this.runner.update(this.globals);
     } 
   }
 }

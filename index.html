@@ -87,7 +87,7 @@
     return import(uri)
       .then(scr=>{
         console.log("Imported script");
-        return {setup:scr.setup, loop: scr.loop};
+        return {setup:scr.setup};
       });
   }
 
