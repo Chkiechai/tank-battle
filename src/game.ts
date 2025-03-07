@@ -63,10 +63,10 @@ export class Game {
       throw new Error("Couldn't build a renderer!");
     }
     let walls = [
-      Bodies.rectangle(0,Game.bounds.height/2,1,Game.bounds.height,{isStatic:true,label:"wall.left"}),
-      Bodies.rectangle(Game.bounds.width/2,0,Game.bounds.width, 1,{isStatic:true,label:"wall.top"}),
-      Bodies.rectangle(Game.bounds.width/2,Game.bounds.height, Game.bounds.width, 1,{isStatic:true,label:"wall.bottom"}),
-      Bodies.rectangle(Game.bounds.width, Game.bounds.height/2, 1,Game.bounds.height,{isStatic:true,label:"wall.right"}),
+      Bodies.rectangle(0,Game.bounds.height/2,10,Game.bounds.height,{isStatic:true,label:"wall.left",restitution:1}),
+      Bodies.rectangle(Game.bounds.width/2,0,Game.bounds.width, 10,{isStatic:true,label:"wall.top",restitution:1}),
+      Bodies.rectangle(Game.bounds.width/2,Game.bounds.height, Game.bounds.width, 10,{isStatic:true,label:"wall.bottom",restitution:1}),
+      Bodies.rectangle(Game.bounds.width, Game.bounds.height/2, 10,Game.bounds.height,{isStatic:true,label:"wall.right",restitution:1}),
     ];
     for(let wall of walls) {
       wall.collisionFilter.category = Game.WallCollisionfilter;

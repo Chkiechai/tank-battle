@@ -165,11 +165,10 @@ export function loop(api:TankAPI) {
     if(this.controls.fire_gun) {
       this.controls.fire_gun = false;
       let bullet = this.turret.fire();
-      Composite.add(engine.world, bullet.body);
-      this.bullets.push(bullet);
-      // Need to make a bullet, give it the right velocity, and send it off right here... but how?
-      // I could just manifest a bullet right here in the tank
-      // I could also ask the turret to shoot. Which one is a better design?
+      if(bullet) {
+        Composite.add(engine.world, bullet.body);
+        this.bullets.push(bullet);
+      }
     }
     let limited = Math.max(this.left_speed,this.right_speed);
     if(limited > Tank.max_speed) {
