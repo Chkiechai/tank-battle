@@ -31,8 +31,9 @@ let tank = new Tank(
 tank.onUpdate((self)=>element.innerHTML=`<p>${self.show()}</p>`, 10);
 
 editor.onShipCode((code:string)=>{
-  tank.reset(); 
+  tank.reset(game.engine); 
   tank.setCode(code);
+  game.run();
 });
 
 document.querySelector('#downloadButton').addEventListener('click', ()=>{

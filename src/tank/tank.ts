@@ -143,11 +143,15 @@ export function loop(api:TankAPI) {
   }
 
   // Put the toys back where they started. kakoii
-  reset() {
+  reset(engine:Engine) {
     Body.setPosition(this.body, this.starting_pos);
     Body.setVelocity(this.body,Vector.create(0,0));
     Body.setAngle(this.body,0);
     Body.setAngularSpeed(this.body, 0);
+    for(let bullet of this.bullets) {
+      Composite.remove(engine.world,bullet.body);
+    }
+    this.bullets = [];
     this.radar.reset();
     this.turret.reset();
     this.code.update('');
