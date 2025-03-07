@@ -6,6 +6,7 @@ import Script from './script';
 import { Game } from '../game';
 import {Radar,RadarData} from './radar';
 import { Turret } from './turret';
+import Bullet from 'src/bullet/bullet';
 
 export type Controls = {
   turn_gun: number,
@@ -28,12 +29,12 @@ export type Sensors = {
 
 // Questions:
 //   - How do I make this thing have collision detection? - use Body isSensor
-//   - What should I do when a collision happens? move and slide? crash? - move and slide, for now. 
+//   - What should I do when a collision happens? move and slide? crash? - move and slide, for now.
 //   - Should tanks be able to push each other around? - yes
 //   - Should the drives be applying forces instead of just setting speeds? - no, not for now. Set speeds, it's easier.
 //
 // The Tank has a radar, a gun, a body, and some code. The code is provided by the player
-// to control the rest of it. See the tank-api.ts file for details about what's in the 
+// to control the rest of it. See the tank-api.ts file for details about what's in the
 // sensors and controls.
 
 export default class Tank{
@@ -42,7 +43,7 @@ export default class Tank{
   gun_charge: number
   left_speed: number
   right_speed: number
-  max_energy: number 
+  max_energy: number
   max_speed: number
   delta_t: number
   body: Body
@@ -53,16 +54,17 @@ export default class Tank{
   team_id: number
   radar: Radar
   turret: Turret
-  
+  bullets:Bullet[]
+
   static min_turn_angle: number=0.00001
   static width:number = 20
-  static length:number = 25 
-  static max_energy: 100 
+  static length:number = 25
+  static max_energy: 100
   static max_speed:number = 200
   static max_radar_speed:number = 2*Math.PI
   static radar_range:number = 200
   static max_gun_speed:number = Math.PI/2
-  
+
   static default_code = `
 import {TankAPI,Controls,Sensors} from './tank-api';
 
@@ -96,13 +98,14 @@ export function loop(api:TankAPI) {
     this.body.collisionFilter.mask = 0xffffffff;
     this.body.collisionFilter.group = 0;
     this.turret = new Turret(this);
-    
+    this.bullets = [];
+
     // Add globals for the tank
     extra_globals.getSensors= this.getSensors.bind(this);
     extra_globals.getControls= this.getControls.bind(this);
     extra_globals.setControls= this.setControls.bind(this);
     extra_globals.getDeltaT= this.getDeltaT.bind(this);
-    
+
     this.code = new Script('', Script.addDefaultGlobals(extra_globals));
     this.controls = {
       turn_gun: 0,
@@ -118,10 +121,10 @@ export function loop(api:TankAPI) {
   id():number {
     return this.body.id;
   }
-  
+
   // Add this tank to the world, along with its other body pieces. There might be
   // a better way to do this using parts.
-  add_to_world(world:Composite) { 
+  add_to_world(world:Composite) {
     Composite.add(world,this.body);
     Composite.add(world, this.radar.collision_shape);
     Composite.add(world,this.turret.shape);
@@ -139,7 +142,7 @@ export function loop(api:TankAPI) {
     }
   }
 
-  // Put the toys back where they started.
+  // Put the toys back where they started. kakoii
   reset() {
     Body.setPosition(this.body, this.starting_pos);
     Body.setVelocity(this.body,Vector.create(0,0));
@@ -150,15 +153,24 @@ export function loop(api:TankAPI) {
     this.code.update('');
   }
 
-  // Go through all of the controls and update the tank properties based on 
+  // Go through all of the controls and update the tank properties based on
   // what the code says to do.
-  update(delta_t: number) {
+  update(delta_t: number, engine:Engine) {
     Body.setAngle(this.body, limitAngle(this.body.angle));
-    this.radar.update(delta_t, this); 
-    this.turret.update(delta_t, this); 
+    this.radar.update(delta_t, this);
+    this.turret.update(delta_t, this);
 
     this.left_speed = this.controls.left_track_speed;
     this.right_speed = this.controls.right_track_speed;
+    if(this.controls.fire_gun) {
+      this.controls.fire_gun = false;
+      let bullet = this.turret.fire();
+      Composite.add(engine.world, bullet.body);
+      this.bullets.push(bullet);
+      // Need to make a bullet, give it the right velocity, and send it off right here... but how?
+      // I could just manifest a bullet right here in the tank
+      // I could also ask the turret to shoot. Which one is a better design?
+    }
     let limited = Math.max(this.left_speed,this.right_speed);
     if(limited > Tank.max_speed) {
       console.log(`WARNING: limiting tank speed to ${Tank.max_speed}, requested speed was ${limited}`);
@@ -180,7 +192,7 @@ export function loop(api:TankAPI) {
     return `Tank pose: `
       +` left: ${setw(nstr(this.left_speed),4)}`
       +` right: ${setw(nstr(this.right_speed),4)}`
-      +` ang=${setw(nstr(this.body.angle),4)}` 
+      +` ang=${setw(nstr(this.body.angle),4)}`
       +` angvel=${setw(nstr(this.body.angularVelocity*Game.sim_fps),4)}`
       + setw(` vel=(${Math.round(this.body.velocity.x*Game.sim_fps)},${Math.round(this.body.velocity.y*Game.sim_fps)})`, 15)
       + setw(` pos=(${Math.round(this.body.position.x)},${Math.round(this.body.position.y)})`, 15)
@@ -210,7 +222,7 @@ export function loop(api:TankAPI) {
   getDeltaT() {
     return this.delta_t;
   }
- 
+
   setControls(controls:Controls) {
     if(controls) {
       this.controls = controls;
@@ -222,4 +234,3 @@ export function loop(api:TankAPI) {
     this.code.execute();
   }
 }
-
