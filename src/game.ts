@@ -114,7 +114,6 @@ export class Game {
       // erase all the dead ones
       this.bullets = new_bullets;
       for(let tank of Object.values(this.tanks)) {
-        tank.control(engine.timing.lastDelta/1000.0);
         tank.update(engine.timing.lastDelta/1000.0,this);
       }
     });
@@ -134,7 +133,11 @@ export class Game {
           if(pair.bodyB.label != 'radar') {
             let b = this.bullets[pair.bodyA.id];
             if(pair.bodyB.label == 'Tank Body') {
-              //this.pause();
+              // We should damage the tank here!
+              console.log(`Tank ${pair.bodyB.id} is taking damage`);
+              console.log(`All tank ids: ${Object.keys(this.tanks).join(', ')}`);
+              let tank_id = pair.bodyB.id;
+              this.tanks[tank_id].take_damage(b.damage());
             }
             if(b) {
               b.dead = true;
@@ -148,7 +151,10 @@ export class Game {
           if(pair.bodyA.label != 'radar') {
             let b = this.bullets[pair.bodyB.id];
             if(pair.bodyA.label == 'Tank Body') {
-              //this.pause();
+              let tank_id = pair.bodyA.id;
+              console.log(`Tank ${tank_id} is taking damage`);
+              console.log(`All tank ids: ${Object.keys(this.tanks).join(', ')}`);
+              this.tanks[tank_id].take_damage(b.damage());
             }
             if(b) {
               b.dead = true;

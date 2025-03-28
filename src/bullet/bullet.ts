@@ -5,11 +5,10 @@ import { vecstr } from "src/utils/string";
 
 export default class Bullet {
   body: Body;
-  energy: number;
+  energy: number; // range = 0..1
   dead: boolean;
 
   static Speed:number = Tank.MaxSpeed * 3;
-  static Damage:(energy:number)=>number=(energy:number)=>energy ** 1.5;
 
   constructor(position:Vector, velocity:Vector, energy:number) {
     this.body = Bodies.circle(position.x,position.y,3);
@@ -27,8 +26,12 @@ export default class Bullet {
     this.energy = energy;
   }
 
+  damage():number {
+    return this.energy ** 1.5;
+  }
+
   update(_dt:number, game: Game) {
-    console.log(`Update Bullet id ${this.body.id}`);
+    //console.log(`Update Bullet id ${this.body.id}`);
     if(this.dead){
       console.log(`Bullet id ${this.body.id} being removed.`);
       Composite.remove(game.world(), this.body);

@@ -17,7 +17,7 @@ export class Turret {
   static EnergyRecovery: number = 0.01;
   static BarrelLength:number = 18;
   static MaxTurnSpeed: number = Math.PI // fastest allowed turning speed
-  
+  static MinimumShotEnergy: number = 0.1;
   constructor(tank: Tank) {
     this.energy = Turret.MaxEnergy;
     this.turn_speed = 0;
@@ -72,7 +72,7 @@ export class Turret {
     return this.angle;
   }
 
-  // Shoot a bullet from the end of the barrel, aimed in the same direction as the barrel, 
+  // Shoot a bullet from the end of the barrel, aimed in the same direction as the barrel,
   // and incorporating the speed of the tank it was fired from. The shot_energy is used
   // to compute the damage.
 
@@ -80,6 +80,9 @@ export class Turret {
     //let bullet = new Bullet(// oh noeeessss)
     // need a position and a velocity
     // The barrel length is in Turret.BarrelLength
+    if(shot_energy < Turret.MinimumShotEnergy) {
+      shot_energy = Turret.MinimumShotEnergy;
+    }
     if(this.energy < shot_energy) {
       return undefined;
     } else {

@@ -38,6 +38,7 @@ export type Sensors = {
 // sensors and controls.
 
 export default class Tank{
+  dead:boolean
   wheel_base:number
   energy: number
   gun_charge: number
@@ -54,6 +55,7 @@ export default class Tank{
   team_id: number
   radar: Radar
   turret: Turret
+  hit_points: number
   bullets:Bullet[]
 
   static MinTurnAngle: number=0.00001
@@ -88,6 +90,7 @@ export function loop(api:TankAPI) {
 }
 `;
   constructor(team_id:number, pos:Vector, extra_globals: any) {
+    this.dead = false;
     this.team_id = team_id;
     this.starting_pos = pos;
     this.body = Bodies.rectangle(pos.x, pos.y, Tank.Length, Tank.Width,{label:"Tank Body"});
@@ -106,6 +109,7 @@ export function loop(api:TankAPI) {
     this.body.collisionFilter.mask = 0xffffffff;
     this.body.collisionFilter.group = 0;
     this.turret = new Turret(this);
+    this.hit_points = 1;
     this.bullets = [];
 
     // Add globals for the tank
@@ -130,6 +134,21 @@ export function loop(api:TankAPI) {
     return this.body.id;
   }
 
+  die() {
+    this.dead = true
+    this.body.friction = 0.5;
+    this.body.frictionAir = 0.5;
+    this.radar.set_visible(false);
+  }
+
+  take_damage(damage: number) {
+    this.hit_points -= damage;
+    console.log(`Tank ${this.body.id} took ${damage} damage: hp = ${this.hit_points}`);
+    if (this.hit_points <= 0) {
+      console.log(`AM DEAD. (id=${this.body.id})`);
+      this.die();
+    }
+  }
   // Add this tank to the world, along with its other body pieces. There might be
   // a better way to do this using parts.
   add_to_world(world:Composite) {
@@ -137,6 +156,14 @@ export function loop(api:TankAPI) {
     Composite.add(world, this.radar.collision_shape);
     Composite.add(world,this.turret.shape);
   }
+
+  stop() {
+    this.controls.right_track_speed = 0;
+    this.controls.left_track_speed = 0;
+    this.controls.fire_gun = 0;
+    this.controls.turn_radar = 0;
+    this.controls.turn_gun = 0;
+   }
 
   // Add a hook to do something whenever the tank is updated. This isn't currently used.
   onUpdate(hndler:(t:Tank)=>void, skip:number = 100) {
@@ -169,6 +196,12 @@ export function loop(api:TankAPI) {
   // Go through all of the controls and update the tank properties based on
   // what the code says to do.
   update(delta_t: number, game:Game) {
+    if (this.dead) {
+      this.stop();
+    } else {
+      this.control(delta_t);
+    }
+
     if(this.update_handler) {
       this.update_handler(this);
     }
@@ -191,11 +224,13 @@ export function loop(api:TankAPI) {
       this.left_speed *= Tank.MaxSpeed/limited;
       this.right_speed *= Tank.MaxSpeed/limited;
     }
-    let delta_angle = (this.left_speed - this.right_speed)*delta_t / this.wheel_base;
-    let angle = this.body.angle;
-    let velocity = Vector.mult(Vector.create(Math.cos(angle), Math.sin(angle)), (this.left_speed+this.right_speed)/2);
-    Body.setAngularVelocity(this.body, delta_angle);
-    Body.setVelocity(this.body, Vector.mult(velocity,1/Game.SimFPS));
+    if(!this.dead) {
+      let delta_angle = (this.left_speed - this.right_speed)*delta_t / this.wheel_base;
+      let angle = this.body.angle;
+      let velocity = Vector.mult(Vector.create(Math.cos(angle), Math.sin(angle)), (this.left_speed+this.right_speed)/2);
+      Body.setAngularVelocity(this.body, delta_angle);
+      Body.setVelocity(this.body, Vector.mult(velocity,1/Game.SimFPS));
+    }
   }
 
   // Put some diagnostics up about the tank's motion properties
