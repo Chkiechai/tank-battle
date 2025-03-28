@@ -13,7 +13,7 @@ export type Controls = {
   turn_radar: number,
   left_track_speed: number,
   right_track_speed: number,
-  fire_gun: boolean,
+  fire_gun: number, // equals power to apply to the bullet
   show_radar: boolean,
 }
 
@@ -56,16 +56,24 @@ export default class Tank{
   turret: Turret
   bullets:Bullet[]
 
-  static min_turn_angle: number=0.00001
-  static width:number = 20
-  static length:number = 25
-  static max_energy: 100
-  static max_speed:number = 200
-  static max_radar_speed:number = 2*Math.PI
-  static radar_range:number = 200
-  static max_gun_speed:number = Math.PI/2
+  static MinTurnAngle: number=0.00001
+  static Width:number = 20
+  static Length:number = 25
+  static MaxEnergy: 100
+  static MaxSpeed:number = 200
+  //static MaxRadarSpeed:number = 2*Math.PI
+  //static RadarRange:number = 200
+  //static MaxGunSpeed:number = Math.PI/2
+  static DefaultControls:Controls = {
+      turn_gun: 0,
+      turn_radar: 0,
+      left_track_speed: 0,
+      right_track_speed: 0,
+      fire_gun: 0,
+      show_radar: true,
+    };
 
-  static default_code = `
+  static DefaultCode = `
 import {TankAPI,Controls,Sensors} from './tank-api';
 
 export function setup() {
@@ -82,10 +90,10 @@ export function loop(api:TankAPI) {
   constructor(team_id:number, pos:Vector, extra_globals: any) {
     this.team_id = team_id;
     this.starting_pos = pos;
-    this.body = Bodies.rectangle(pos.x, pos.y, Tank.length, Tank.width,{label:"Tank Body"});
+    this.body = Bodies.rectangle(pos.x, pos.y, Tank.Length, Tank.Width,{label:"Tank Body"});
     this.body.frictionAir = 0;
-    this.max_energy = Tank.max_energy;
-    this.wheel_base = Tank.width;
+    this.max_energy = Tank.MaxEnergy;
+    this.wheel_base = Tank.Width;
     Body.setAngle(this.body,0);
     this.gun_charge = 1;
     this.left_speed = 0;
@@ -112,7 +120,7 @@ export function loop(api:TankAPI) {
       turn_radar: 0,
       left_track_speed: 0,
       right_track_speed: 0,
-      fire_gun: false,
+      fire_gun: 0,
       show_radar: true,
     };
   }
@@ -151,6 +159,7 @@ export function loop(api:TankAPI) {
     for(let bullet of this.bullets) {
       Composite.remove(engine.world,bullet.body);
     }
+    this.controls = Tank.DefaultControls;
     this.bullets = [];
     this.radar.reset();
     this.turret.reset();
@@ -159,35 +168,34 @@ export function loop(api:TankAPI) {
 
   // Go through all of the controls and update the tank properties based on
   // what the code says to do.
-  update(delta_t: number, engine:Engine) {
+  update(delta_t: number, game:Game) {
+    if(this.update_handler) {
+      this.update_handler(this);
+    }
     Body.setAngle(this.body, limitAngle(this.body.angle));
     this.radar.update(delta_t, this);
     this.turret.update(delta_t, this);
 
     this.left_speed = this.controls.left_track_speed;
     this.right_speed = this.controls.right_track_speed;
-    if(this.controls.fire_gun) {
-      this.controls.fire_gun = false;
-      let bullet = this.turret.fire();
+    if(this.controls.fire_gun>0) {
+      let bullet = this.turret.fire(this.controls.fire_gun, this.body.velocity);
       if(bullet) {
-        Composite.add(engine.world, bullet.body);
-        this.bullets.push(bullet);
+        game.add_bullet(bullet);
       }
+      this.controls.fire_gun = 0;
     }
     let limited = Math.max(this.left_speed,this.right_speed);
-    if(limited > Tank.max_speed) {
-      console.log(`WARNING: limiting tank speed to ${Tank.max_speed}, requested speed was ${limited}`);
-      this.left_speed *= Tank.max_speed/limited;
-      this.right_speed *= Tank.max_speed/limited;
+    if(limited > Tank.MaxSpeed) {
+      console.log(`WARNING: limiting tank speed to ${Tank.MaxSpeed}, requested speed was ${limited}`);
+      this.left_speed *= Tank.MaxSpeed/limited;
+      this.right_speed *= Tank.MaxSpeed/limited;
     }
     let delta_angle = (this.left_speed - this.right_speed)*delta_t / this.wheel_base;
     let angle = this.body.angle;
     let velocity = Vector.mult(Vector.create(Math.cos(angle), Math.sin(angle)), (this.left_speed+this.right_speed)/2);
     Body.setAngularVelocity(this.body, delta_angle);
-    Body.setVelocity(this.body, Vector.mult(velocity,1/Game.sim_fps));
-    if(this.update_handler) {
-      this.update_handler(this);
-    }
+    Body.setVelocity(this.body, Vector.mult(velocity,1/Game.SimFPS));
   }
 
   // Put some diagnostics up about the tank's motion properties
@@ -196,8 +204,8 @@ export function loop(api:TankAPI) {
       +` left: ${setw(nstr(this.left_speed),4)}`
       +` right: ${setw(nstr(this.right_speed),4)}`
       +` ang=${setw(nstr(this.body.angle),4)}`
-      +` angvel=${setw(nstr(this.body.angularVelocity*Game.sim_fps),4)}`
-      + setw(` vel=(${Math.round(this.body.velocity.x*Game.sim_fps)},${Math.round(this.body.velocity.y*Game.sim_fps)})`, 15)
+      +` angvel=${setw(nstr(this.body.angularVelocity*Game.SimFPS),4)}`
+      + setw(` vel=(${Math.round(this.body.velocity.x*Game.SimFPS)},${Math.round(this.body.velocity.y*Game.SimFPS)})`, 15)
       + setw(` pos=(${Math.round(this.body.position.x)},${Math.round(this.body.position.y)})`, 15)
       ;
   }
@@ -209,7 +217,7 @@ export function loop(api:TankAPI) {
   getSensors() : Sensors {
     return {
       radar_hits: this.radar.get_hits(),
-      speed: Game.sim_fps*(this.left_speed+this.right_speed)/2,
+      speed: Game.SimFPS*(this.left_speed+this.right_speed)/2,
       direction:this.body.angle,
       gun_angle: angleRelativeTo(this.turret.get_angle(), 0),
       radar_angle: angleRelativeTo(this.radar.angle(),this.body.angle),

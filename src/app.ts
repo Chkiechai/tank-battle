@@ -22,17 +22,25 @@ let api_globals = {
   step: game.step.bind(game),
 };
 
-let tank = new Tank(
+let tank2 = new Tank(
+  1,
+  Vector.create(200,200),
+  api_globals
+);
+
+let tank1 = new Tank(
   0, // team_id
   Vector.create(200,200), // Position
   api_globals // Extra global functions for the API
 );
 
-tank.onUpdate((self)=>element.innerHTML=`<p>${self.show()}</p>`, 10);
+tank1.onUpdate((self)=>element.innerHTML=`<p>${self.show()}</p>`, 10);
 
 editor.onShipCode((code:string)=>{
-  tank.reset(game.engine); 
-  tank.setCode(code);
+  tank1.reset(game.engine); 
+  tank1.setCode(code);
+  tank2.reset(game.engine);
+  tank2.setCode(code);
   game.run();
 });
 
@@ -40,6 +48,7 @@ document.querySelector('#downloadButton').addEventListener('click', ()=>{
   download(`tank-${editor.contentHash().toString(16)}.ts`, editor.getCode());
 });
 
-game.add_tank(tank);
+game.add_tank(tank1);
+game.add_tank(tank2);
 game.run();
 

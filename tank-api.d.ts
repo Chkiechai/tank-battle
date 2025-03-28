@@ -16,7 +16,7 @@ export interface Controls {
   turn_radar: number,
   left_track_speed: number,
   right_track_speed: number,
-  fire_gun: boolean,
+  fire_gun: number,
   show_radar: boolean,
 }
 

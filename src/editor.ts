@@ -46,7 +46,7 @@ export default class Editor {
         ( main:any, _tsWorker:any, sandboxFactory:any) => {
           let initialCode = this.loadSaved();
           if(initialCode == null) {
-            initialCode = Tank.default_code;
+            initialCode = Tank.DefaultCode;
           }
           let self = this;
           this.backup_timer = setInterval(()=>self.saveBackup(), 10000);

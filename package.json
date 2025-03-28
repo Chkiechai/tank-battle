@@ -4,8 +4,9 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "build": "npm run build-code && npm run build-bundle",
+    "build":     "npm run build-code && npm run bundle-web",
     "build-web": "npm run build-code && npm run bundle-web",
+    "bw": "npm run build-web",
     "build-code": "tsc",
     "build-bundle": "esbuild build/app.js --sourcemap --bundle --outfile=dist/app.cjs --platform=node --format=cjs",
     "bundle-web": "esbuild build/app.js --sourcemap --bundle --outfile=dist/app.js --target=chrome58,firefox57,safari11,edge16",

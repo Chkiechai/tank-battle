@@ -13,12 +13,13 @@ export class Turret {
   angle: number
   energy: number // when this is 1, I can shoot
 
+  static MaxEnergy:number = 1;
+  static EnergyRecovery: number = 0.01;
   static BarrelLength:number = 18;
-
-  static max_turn_speed: number = Math.PI // fastest allowed turning speed
-
+  static MaxTurnSpeed: number = Math.PI // fastest allowed turning speed
+  
   constructor(tank: Tank) {
-    this.energy = 1;
+    this.energy = Turret.MaxEnergy;
     this.turn_speed = 0;
     this.tank_id = tank.id();
     this.angle = 0;
@@ -51,15 +52,17 @@ export class Turret {
 
   reset() {
     Body.setAngle(this.shape,0);
+    this.angle = 0;
+    this.energy = Turret.MaxEnergy;
     this.turn_speed = 0;
   }
 
   update(delta_t:number, tank:Tank) {
-    this.turn_speed = clamp(tank.controls.turn_gun, -Tank.max_gun_speed, Tank.max_gun_speed);
+    this.turn_speed = clamp(tank.controls.turn_gun, -Turret.MaxTurnSpeed, Turret.MaxTurnSpeed);
     this.angle = limitAngle(this.angle + this.turn_speed * delta_t);
-    this.energy += 0.01;
-    if(this.energy > 1) {
-      this.energy = 1;
+    this.energy += Turret.EnergyRecovery;
+    if(this.energy > Turret.MaxEnergy) {
+      this.energy = Turret.MaxEnergy;
     }
     Body.setPosition(this.shape,tank.body.position);
     Body.setAngle(this.shape, limitAngle(tank.body.angle+this.angle));
@@ -69,7 +72,11 @@ export class Turret {
     return this.angle;
   }
 
-  fire(shot_energy:number = 0.8): Bullet|undefined {
+  // Shoot a bullet from the end of the barrel, aimed in the same direction as the barrel, 
+  // and incorporating the speed of the tank it was fired from. The shot_energy is used
+  // to compute the damage.
+
+  fire(shot_energy:number,initial_velocity:Vector): Bullet|undefined {
     //let bullet = new Bullet(// oh noeeessss)
     // need a position and a velocity
     // The barrel length is in Turret.BarrelLength
@@ -83,7 +90,7 @@ export class Turret {
         Turret.BarrelLength * Math.sin(this.shape.angle)
     );// konichiwa
     let endOfGun: Vector = Vector.add(this.shape.position, barrelDisp);
-    let bulletVel: Vector = Vector.mult(Vector.normalise(barrelDisp), Bullet.Speed*Game.fixed_dt);
-    return new Bullet(endOfGun, bulletVel);
+    let bulletVel: Vector = Vector.add(initial_velocity, Vector.mult(Vector.normalise(barrelDisp), Bullet.Speed*Game.FixedDt));
+    return new Bullet(endOfGun, bulletVel, shot_energy);
   }
 }

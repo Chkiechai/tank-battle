@@ -27,9 +27,9 @@ export class Radar {
   tank_id: number // the tank's id number
   hits: RadarData
   
-  static max_turn_speed: number = 2*Math.PI // fastest allowed turning speed
-  static default_range: number = 300
-  static emptyHits():RadarData  {
+  static MaxTurnSpeed: number = 2*Math.PI // fastest allowed turning speed
+  static Range: number = 300
+  static EmptyHits():RadarData  {
     return {
       wall:-1,
       enemies:[],
@@ -38,10 +38,10 @@ export class Radar {
     }
   }
   
-  constructor(tank: Tank, range: number = Radar.default_range) {
-    this.hits = Radar.emptyHits();
+  constructor(tank: Tank, range: number = Radar.Range) {
+    this.hits = Radar.EmptyHits();
     this.range = range;
-    this.sweep = Math.sin(Radar.max_turn_speed)*this.range;
+    this.sweep = Math.sin(Radar.MaxTurnSpeed)*this.range;
     this.turn_speed = 0;
     this.team_id = tank.team_id;
     this.tank_id = tank.id();
@@ -51,7 +51,7 @@ export class Radar {
 
   setup_shape(pos:Vector):void {
     // Make the radar intersection shape (a circular-ish sector)
-    let half_ms = Radar.max_turn_speed/(2*Game.sim_fps);
+    let half_ms = Radar.MaxTurnSpeed/(2*Game.SimFPS);
     let verts = [
         [0,-Math.sin(half_ms)/3],
         [Math.cos(half_ms),-Math.sin(half_ms)],
@@ -82,19 +82,19 @@ export class Radar {
 
   reset() {
     Body.setAngle(this.collision_shape,0);
-    this.hits = Radar.emptyHits();
+    this.hits = Radar.EmptyHits();
+    this.turn_speed = 0;
   }
   
   update(delta_t:number,tank:Tank) {
     this.turn_speed = clamp(
       tank.controls.turn_radar, 
-      -Radar.max_turn_speed, 
-      Radar.max_turn_speed);
+      -Radar.MaxTurnSpeed, 
+      Radar.MaxTurnSpeed);
     let angle = limitAngle(this.collision_shape.angle + this.turn_speed * delta_t);
     Body.setAngle(this.collision_shape,angle);
     Body.setPosition(this.collision_shape, tank.body.position);
     this.set_visible(tank.controls.show_radar);
-    console.log("Radar angle: ", nstr((this.collision_shape.angle)));
   }
   
   set_visible(vis:boolean) {

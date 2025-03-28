@@ -2,22 +2,31 @@
 import {Events,Engine,Render,Bodies,Composite, Vector} from "matter-js";
 import Tank from "./tank/tank";
 import { Ray } from "./utils/math";
+import Bullet from "./bullet/bullet";
+
+
+/**
+  The Game class is in charge of running the arena and coordinating all of the updates.
+  It keeps track of the set of tanks and the score as well.
+**/
 
 export class Game {
   engine: Engine
   render: Render|null
-  tanks: Tank[]
+  tanks: {[key:number]:Tank}
   last_update: number
   animation_id:number | undefined
   output:string[]
+  bullets: {[key:number]:Bullet}
   paused:boolean
 
   // The target frames per second for the physics simulation
-  static sim_fps = 60;
+  static SimFPS = 60;
+
   // This is the number of seconds per timestep. The physics simulation does all of its
   // velocity and other change calculations *per frame* NOT per second, so this is used
   // to map the numbers to something more usable.
-  static fixed_dt:number|undefined = 0.016;
+  static FixedDt:number|undefined = 1.0/Game.SimFPS;
 
   static RadarCollisionFilter:number = 1;
   static BulletCollisionFilter:number = 1<<1;
@@ -44,10 +53,11 @@ export class Game {
   constructor() {
     this.engine = Engine.create();
     this.engine.gravity.scale = 0;
-    this.tanks = [];
+    this.tanks = {};
     this.animation_id = undefined;
     this.last_update=-1;
     this.output = [];
+    this.bullets = {};
     this.paused = false;
     // create a renderer
     this.render = Render.create({
@@ -78,35 +88,82 @@ export class Game {
     this.register_updates();
   }
 
+  world():Composite {
+    return this.engine.world;
+  }
+
+  add_bullet(bullet:Bullet) {
+    this.bullets[bullet.body.id] = bullet;
+    Composite.add(this.engine.world,bullet.body);
+  }
+
   // Connect the physics engine updates to the game state so the tanks get updated.
   register_updates() {
     // Update the controls before the step starts
     Events.on(this.engine, 'beforeUpdate', (event)=> {
+      //console.log("update");
       this.output=[];
       let engine = event.source;
-      for(let tank of this.tanks) {
+      let new_bullets = {};
+      for(let entry of Object.entries(this.bullets)) {
+        entry[1].update(engine.timing.lastDelta/1000.0,this);
+        if(!entry[1].dead) { // only save the live ones
+          new_bullets[entry[0]] = entry[1];
+        }
+      }
+      // erase all the dead ones
+      this.bullets = new_bullets;
+      for(let tank of Object.values(this.tanks)) {
         tank.control(engine.timing.lastDelta/1000.0);
-        tank.update(engine.timing.lastDelta/1000.0,engine);
+        tank.update(engine.timing.lastDelta/1000.0,this);
       }
     });
-    // Update the output window after the step is finished.
-    //Events.on(this.engine, 'afterUpdate', (event)=>{
-    //  let tank_poses = this.tanks.map((t) => t.show());
-    //  let out = '<pre>' +tank_poses.join('\n') + '\n' + `${this.output.join('\n')}`+'</pre>';
-    //  document.querySelector('#output').innerHTML = out;
-    //});
 
-    // Process collision events.
+    // radar is the only thing that needs *active* events for now, to continue detecting
+    // when it's on something.
     Events.on(this.engine, 'collisionActive', (event)=>{
-      for(let tank of this.tanks) {
+       for(let tank of Object.values(this.tanks)) {
         tank.radar.scan(event.pairs);
+      }
+    });
+    // Process collision events.
+    Events.on(this.engine, 'collisionStart', (event)=>{
+      for(let pair of event.pairs){
+        if(pair.bodyA.label == 'Bullet') {
+          console.log(`Bullet(A, id=${pair.bodyA.id}) hit: ${pair.bodyB.label}`);
+          if(pair.bodyB.label != 'radar') {
+            let b = this.bullets[pair.bodyA.id];
+            if(pair.bodyB.label == 'Tank Body') {
+              //this.pause();
+            }
+            if(b) {
+              b.dead = true;
+              console.log("bullet a marked dead");
+              //delete this.bullets[pair.bodyA.id];
+            }
+          }
+        }
+        if(pair.bodyB.label == 'Bullet') {
+          console.log(`Bullet(B, id=${pair.bodyB.id}) hit: ${pair.bodyA.label}`);
+          if(pair.bodyA.label != 'radar') {
+            let b = this.bullets[pair.bodyB.id];
+            if(pair.bodyA.label == 'Tank Body') {
+              //this.pause();
+            }
+            if(b) {
+              b.dead = true;
+              console.log("bullet b marked dead");
+              //delete this.bullets[pair.bodyB.id];
+            }
+          }
+        }
       }
     })
   }
 
   updateOutput() {
-    let tank_poses = this.tanks.map((t) => t.show());
-    let out = '<pre>' +tank_poses.join('\n') + '\n' + `${this.output.join('\n')}`+'</pre>';
+    let tank_poses = Object.values(this.tanks).map((t) => t.show());
+    let out = `<pre>${tank_poses.join('\n')}\nBullets: ${Object.keys(this.bullets).length}\n${this.output.join('\n')}</pre>`;
     document.querySelector('#output').innerHTML = out;
   }
 
@@ -125,7 +182,7 @@ export class Game {
 
   // add a tank to the arena.
   add_tank(tank:Tank) {
-    this.tanks.push(tank);
+    this.tanks[tank.id()]=tank;
     tank.add_to_world(this.engine.world);
   }
 
@@ -157,8 +214,8 @@ export class Game {
   // This just replaces the real-time delta_t with the fixed timestep if that's configured by
   // setting Game.fixed_dt
   fixDeltaT(dt: number): number {
-    if(Game.fixed_dt) {
-      return 1/Game.sim_fps;
+    if(Game.FixedDt) {
+      return 1/Game.SimFPS;
     } else {
       return dt;
     }
@@ -169,10 +226,10 @@ export class Game {
   update() {
     let this_update = new Date().getTime()/1000.0;
     if(this.last_update < 0) {
-      this.last_update = this_update-1/Game.sim_fps;
+      this.last_update = this_update-1/Game.SimFPS;
     }
     let delta_t = this_update-this.last_update;
-    if(delta_t >= 1/Game.sim_fps) {
+    if(delta_t >= 1/Game.SimFPS) {
       Engine.update(this.engine,this.fixDeltaT(delta_t)*1000.0); // engine wants milliseconds
       this.last_update = new Date().getTime()/1000.0; // everything else wants seconds
     }
