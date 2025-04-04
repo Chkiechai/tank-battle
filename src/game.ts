@@ -188,8 +188,14 @@ export class Game {
 
   // add a tank to the arena.
   add_tank(tank:Tank) {
+    let pos = Vector.create(
+      Math.random() * (Game.bounds.width - 50) + 25,
+      Math.random() * (Game.bounds.height - 50) + 25,
+    );
+    let ang = Math.random() * Math.PI * 2;
     this.tanks[tank.id()]=tank;
     tank.add_to_world(this.engine.world);
+    tank.reset(this.engine, pos, ang);
   }
 
   // Run the simulation until the next pause is called
