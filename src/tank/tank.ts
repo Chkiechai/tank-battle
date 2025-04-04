@@ -59,9 +59,10 @@ export default class Tank{
   bullets:Bullet[]
 
   static MinTurnAngle: number=0.00001
+  static MaxAngularVelocity: number=Math.PI
   static Width:number = 20
   static Length:number = 25
-  static MaxEnergy: 100
+  static MaxEnergy: 1000
   static MaxSpeed:number = 200
   //static MaxRadarSpeed:number = 2*Math.PI
   //static RadarRange:number = 200
@@ -231,6 +232,11 @@ export function loop(api:TankAPI) {
     }
     if(!this.dead) {
       let delta_angle = (this.left_speed - this.right_speed)*delta_t / this.wheel_base;
+      if(delta_angle*Game.SimFPS > Tank.MaxAngularVelocity) {
+        delta_angle = Tank.MaxAngularVelocity/Game.SimFPS;
+        this.left_speed *= Tank.MaxAngularVelocity/(delta_angle*Game.SimFPS);
+        this.right_speed *= Tank.MaxAngularVelocity/(delta_angle*Game.SimFPS);
+      }
       let angle = this.body.angle;
       let velocity = Vector.mult(Vector.create(Math.cos(angle), Math.sin(angle)), (this.left_speed+this.right_speed)/2);
       Body.setAngularVelocity(this.body, delta_angle);
