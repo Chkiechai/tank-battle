@@ -189,6 +189,7 @@ export function loop(api:TankAPI) {
     for(let bullet of this.bullets) {
       Composite.remove(engine.world,bullet.body);
     }
+    this.energy = Tank.MaxEnergy;
     this.controls = Tank.DefaultControls;
     this.bullets = [];
     this.radar.reset();
