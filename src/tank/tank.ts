@@ -232,8 +232,8 @@ export function loop(api:TankAPI) {
     }
     if(!this.dead) {
       let delta_angle = (this.left_speed - this.right_speed)*delta_t / this.wheel_base;
-      if(delta_angle*Game.SimFPS > Tank.MaxAngularVelocity) {
-        delta_angle = Tank.MaxAngularVelocity/Game.SimFPS;
+      if(Math.abs(delta_angle*Game.SimFPS) > Tank.MaxAngularVelocity) {
+        delta_angle = Math.sign(delta_angle) * Tank.MaxAngularVelocity/Game.SimFPS;
         this.left_speed *= Tank.MaxAngularVelocity/(delta_angle*Game.SimFPS);
         this.right_speed *= Tank.MaxAngularVelocity/(delta_angle*Game.SimFPS);
       }

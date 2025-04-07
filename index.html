@@ -65,6 +65,10 @@
     <div class="column">
       <div class="flex1">
         <div id="loader">Loading...</div>
+        <div class="row">
+          <input id="source-url" type="text" placeholder="URL of source code to load"></input>
+          <button id="load-source">Load Source</button>          
+        </div>
         <div id="monaco-editor-embed" style="height: 800px;" />
       </div>
       <div class="row">
@@ -91,6 +95,8 @@
       });
   }
 
+  // This is the function that lets the user download the contents of the text
+  // editor as a file, with a name based on the version number.
   function download(filename, text) {
     var element = document.createElement('a');
     element.setAttribute('href', 'data:text/javascript;base64,' + btoa(text));
