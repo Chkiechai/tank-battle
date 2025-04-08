@@ -3,6 +3,8 @@ import {Vector} from "matter-js";
 import Tank from "./tank/tank";
 import { Game } from "./game";
 import Editor from "./editor";
+import {turnAngle, limitAngle, Ray, clamp} from './utils/math';
+
 declare function download(filename:string,content:string):void;
 
 let element = document.querySelector('#output');
@@ -12,7 +14,8 @@ editor.setup();
 let game = new Game();
 document.querySelector('#pauseButton').addEventListener('click', ()=>game.pause());
 document.querySelector('#stepButton').addEventListener('click', ()=>game.step());
-document.querySelector('#resumeButton').addEventListener('click', ()=>game.resume())
+document.querySelector('#resumeButton').addEventListener('click', ()=>game.resume());
+
 let api_globals = { 
   println:game.println.bind(game),
   pause: game.pause.bind(game),
@@ -20,6 +23,10 @@ let api_globals = {
   // can't see how this could be used, but then again, it is very small...
   // Even the wisest cannot see all ends.
   step: game.step.bind(game),
+  turnAngle: turnAngle,
+  limitAngle: limitAngle,
+  clamp: clamp,
+  Ray: Ray,
 };
 
 let tank2 = new Tank(

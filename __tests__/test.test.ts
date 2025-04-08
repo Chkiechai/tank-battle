@@ -1,6 +1,5 @@
 import {test,expect} from "@jest/globals";
-import {limitAngle} from "../src/utils";
-import {Ray} from "../src/math";
+import {Ray,turnAngle,limitAngle} from "../src/utils/math";
 import {Vector} from 'matter-js';
 
 test("limitAngle works", () => {
@@ -25,4 +24,13 @@ test("ray intersection works", () => {
     expect(x.x).toBeCloseTo(100);
     expect(x.y).toBeCloseTo(50);
   }
+})
+
+test("angleDiff works", () => {
+  let df  = turnAngle(1.2, -1.8);
+  expect(df).toBeCloseTo(-3);
+  df = turnAngle(1, -3.4);
+  expect(df).toBeCloseTo(-4.4+Math.PI);
+  df = turnAngle(7,1);
+  expect(df).toBeCloseTo(1-(7-2*Math.PI));
 })
