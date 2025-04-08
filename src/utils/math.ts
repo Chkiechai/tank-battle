@@ -31,8 +31,7 @@ export class Ray {
 // No turn will ever be more than Math.PI, but it may be positive or negative.
 export function turnAngle(from_angle: number, to_angle: number):number {
   let pi2 = Math.PI*2;
-  let delta = (to_angle % pi2 - from_angle % pi2) % pi2;
-  //let delta = fmod(fmod(to_angle,pi2) - fmod(from_angle, pi2),pi2);
+  let delta = fmod(fmod(to_angle, pi2) - fmod(from_angle, pi2), pi2);
   console.log(`delta = ${delta}`);
   if(Math.abs(delta) > Math.PI) {
     delta -= Math.sign(delta)*Math.PI;
@@ -42,11 +41,15 @@ export function turnAngle(from_angle: number, to_angle: number):number {
 
 // limit the angle to the range 0...2pi
 export function limitAngle(angle:number):number {
-  let shrunk = angle%(2*Math.PI);
+  let shrunk = fmod(angle,(2*Math.PI));
   if(shrunk < 0) {
     shrunk += 2 * Math.PI;
   }
   return shrunk;
+}
+
+export function fmod(a:number, b:number) : number {
+  return a - Math.trunc(a/b)*b;
 }
 
 export function clamp(value:number, min:number, max:number) : number {

@@ -3,7 +3,7 @@ import {Vector} from "matter-js";
 import Tank from "./tank/tank";
 import { Game } from "./game";
 import Editor from "./editor";
-import {turnAngle, limitAngle, Ray, clamp} from './utils/math';
+import {fmod, turnAngle, limitAngle, Ray, clamp} from './utils/math';
 
 declare function download(filename:string,content:string):void;
 
@@ -26,6 +26,7 @@ let api_globals = {
   turnAngle: turnAngle,
   limitAngle: limitAngle,
   clamp: clamp,
+  fmod: fmod,
   Ray: Ray,
 };
 
