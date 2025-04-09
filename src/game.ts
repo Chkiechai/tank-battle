@@ -5,6 +5,7 @@ import { Ray } from "./utils/math";
 import Bullet from "./bullet/bullet";
 import enemies from './enemy_ai/enemies';
 import {JsModule} from './tank/script';
+import { TankAPI } from "tank-api";
 
 /**
   The Game class is in charge of running the arena and coordinating all of the updates.
@@ -20,9 +21,10 @@ export class Game {
   output:string[]
   bullets: {[key:number]:Bullet}
   paused:boolean
-  enemies: {[key:string]:JsModule}
+  enemy_ai_modules: {[key:string]:JsModule}
   enemy_ai: JsModule
-
+  globals: TankAPI
+  
   // The target frames per second for the physics simulation
   static SimFPS = 60;
 
@@ -91,9 +93,21 @@ export class Game {
     this.register_updates();
   }
 
+  setGlobals(api:TankAPI) {
+    this.globals = api;
+  }
+  
+  setAllyCode(code:string) {
+    for(let tank of Object.values(this.tanks)) {
+      if(tank.team_id == 0) { // allied team_id is always zero for now
+        tank.setCode(code);
+      }
+    }
+  }
+  
   setEnemyAI(ai_name: string) {
     console.log(`Setting the AI to ${ai_name}`);
-    this.enemy_ai = this.enemies[ai_name];
+    this.enemy_ai = this.enemy_ai_modules[ai_name];
     this.reset();
   }
 
@@ -107,34 +121,23 @@ export class Game {
   }
 
   reset() {
-    let tank2 = new Tank(
-      1,
-      Vector.create(200,200),
-      api_globals
-    );
+    let enemies = [
+      new Tank( 1, Vector.create(200,200), this.globals),
+      new Tank( 1, Vector.create(200,200), this.globals),
+      new Tank( 1, Vector.create(200,200), this.globals),
+    ];
+    let allies = [
+      new Tank( 0, Vector.create(200,200), this.globals), 
+      new Tank( 0, Vector.create(200,200), this.globals),
+      new Tank( 0, Vector.create(200,200), this.globals)
+    ];
 
-    let tank1 = new Tank(
-      0, // team_id
-      Vector.create(200,200), // Position
-      api_globals // Extra global functions for the API
-    );
-
-    tank1.onUpdate((self)=>element.innerHTML=`<p>${self.show()}</p>`, 10);
-
-    editor.onShipCode((code:string)=>{
-      tank1.reset(game.engine);
-      tank1.setCode(code);
-      tank2.reset(game.engine);
-      tank2.setCode(code);
-      game.run();
-    });
-
-    document.querySelector('#downloadButton').addEventListener('click', ()=>{
-      download(`tank-${editor.contentHash().toString(16)}.ts`, editor.getCode());
-    });
-
-    this.add_tank(tank1);
-    this.add_tank(tank2);
+    for(let tank of allies) {
+      this.add_tank(tank);
+    }
+    for(let tank of enemies) {
+      this.add_tank(tank);
+    }
     this.run();
   }
 
