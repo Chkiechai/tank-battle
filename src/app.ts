@@ -7,13 +7,11 @@ import {fmod, turnAngle, limitAngle, Ray, clamp} from './utils/math';
 import { TankAPI } from "tank-api";
 
 declare function download(filename:string,content:string):void;
-declare function insert_enemies(element:any, names:string[]);
 
 let element = document.querySelector('#output');
 let editor = new Editor('monaco-editor-embed');
 editor.setup();
 
-insert_enemies(document.querySelector("#enemy-options"),["foo", "bar", "blab"]);
 
 document.querySelector('#pauseButton').addEventListener('click', ()=>game.pause());
 document.querySelector('#stepButton').addEventListener('click', ()=>game.step());
@@ -36,22 +34,8 @@ let api_globals = {
   Ray: Ray,
 };
 game.setGlobals(api_globals);
-
-let tank2 = new Tank(
-  1,
-  Vector.create(200,200),
-  api_globals
-);
-
-let tank1 = new Tank(
-  0, // team_id
-  Vector.create(200,200), // Position
-  api_globals // Extra global functions for the API
-);
-
-tank1.onUpdate((self)=>element.innerHTML=`<p>${self.show()}</p>`, 10);
-
 editor.onShipCode((code:string)=>{
+  game.reset();
   game.setAllyCode(code);
   game.run();
 });
@@ -60,6 +44,5 @@ document.querySelector('#downloadButton').addEventListener('click', ()=>{
   download(`tank-${editor.contentHash().toString(16)}.ts`, editor.getCode());
 });
 
-game.add_tank(tank1);
-game.add_tank(tank2);
+game.reset();
 game.run();

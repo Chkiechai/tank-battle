@@ -1,6 +1,6 @@
 import { TankAPI, Controls, Sensors } from '.../../tank-api';
 
-export function setup() {
+export default function setup() {
   return new Tank();
 }
 
@@ -29,16 +29,16 @@ class Tank {
     let aim_error = sensors.radar_angle - sensors.gun_angle
 
     controls.turn_radar = Math.PI * 2;
-    api.println("aim angle: ", sensors.gun_angle);
-    api.println("radar angle: ", sensors.radar_angle);
-    api.println("gun angle: ", sensors.gun_angle);
+    api.println("(enemy) aim angle: ", sensors.gun_angle);
+    api.println("(enemy) radar angle: ", sensors.radar_angle);
+    api.println("(enemy) gun angle: ", sensors.gun_angle);
     controls.turn_gun = Math.sign(sensors.radar_angle - sensors.gun_angle) * Math.PI;
 
     if (sensors.radar_hits.enemies.length > 0) {
       controls.turn_radar = 0;
       sensors.radar_angle -= 0.15;
       if (Math.abs(aim_error) <= 0.05) {
-        api.println("shoot angle ", sensors.gun_angle)
+        api.println("(enemy) shoot angle ", sensors.gun_angle)
         controls.fire_gun = 0.3;
       } else {
         controls.fire_gun = 0;
@@ -161,8 +161,8 @@ class Turn extends State {
     let trackSpeed = (this.half_wheel_base * (this.target_angle - sensors.direction)) / dt;
     let threshold = 0.1;
     this.target_angle = this.target_angle - Math.sign(this.target_angle) * Math.floor(Math.abs(this.target_angle)/(2*Math.PI)) * 2 * Math.PI
-    api.println("direction: " + sensors.direction)
-    api.println("target_angle :" + this.target_angle)
+    api.println("(enemy) direction: " + sensors.direction)
+    api.println("(enemy) target_angle :" + this.target_angle)
     if (Math.abs(trackSpeed) > this.max_speed) {
       trackSpeed = Math.sign(trackSpeed) * this.max_speed;
     }
@@ -171,7 +171,7 @@ class Turn extends State {
     if (Math.abs(this.target_angle - sensors.direction) < threshold) {
       controls.right_track_speed = 0;
       controls.left_track_speed = 0;
-      api.println("direction: " + sensors.direction)
+      api.println("(enemy) direction: " + sensors.direction)
 
       return "forward";
     } else {

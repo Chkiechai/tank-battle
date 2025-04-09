@@ -1,6 +1,6 @@
 import { TankAPI, Controls, Sensors } from '../../tank-api';
 
-export function setup() {
+export default function setup() {
   return new Tank()
 }
 

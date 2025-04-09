@@ -19,7 +19,7 @@ export class EmptyModule {
   }
 }
 
-export default class Script{
+export class Script{
   js_module: JsModule
   runner: TankCode
   globals: TankAPI

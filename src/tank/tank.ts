@@ -2,7 +2,7 @@ import {Composite, Vector as Vector, Vertices} from 'matter-js';
 import {Bodies,Body,Engine} from 'matter-js';
 import { nstr, setw} from '../utils/string';
 import { limitAngle, angleRelativeTo } from '../utils/math';
-import Script, { EmptyModule } from './script';
+import {Script, EmptyModule } from './script';
 import { Game } from '../game';
 import {Radar,RadarData} from './radar';
 import { Turret } from './turret';
@@ -120,8 +120,10 @@ export function loop(api:TankAPI) {
     extra_globals.setControls= this.setControls.bind(this);
     extra_globals.getDeltaT= this.getDeltaT.bind(this);
 
-    this.code = new Script(new EmptyModule(),
-      Script.addDefaultGlobals(extra_globals) as TankAPI);
+    this.code = new Script(
+      new EmptyModule(),
+      Script.addDefaultGlobals(extra_globals) as TankAPI
+    );
 
     this.controls = {
       turn_gun: 0,
@@ -159,6 +161,12 @@ export function loop(api:TankAPI) {
     Composite.add(world,this.body);
     Composite.add(world, this.radar.collision_shape);
     Composite.add(world,this.turret.shape);
+  }
+
+  remove_from_world(world:Composite){
+    Composite.remove(world,this.body);
+    Composite.remove(world,this.radar.collision_shape);
+    Composite.remove(world,this.turret.shape);
   }
 
   stop() {
@@ -263,6 +271,10 @@ export function loop(api:TankAPI) {
     this.code.update(code);
   }
 
+  setModule(script:Script) {
+    this.code = script;
+  }
+  
   getSensors() : Sensors {
     return {
       radar_hits: this.radar.get_hits(),

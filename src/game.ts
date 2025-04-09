@@ -1,10 +1,13 @@
 
-import {Events,Engine,Render,Bodies,Composite, Vector} from "matter-js";
+import {Events,Engine,Render,Bodies,Composite, Vector, World} from "matter-js";
 import Tank from "./tank/tank";
 import { Ray } from "./utils/math";
 import Bullet from "./bullet/bullet";
 import enemies from './enemy_ai/enemies';
 import {JsModule} from './tank/script';
+import { Script } from './tank/script';
+
+declare function insert_enemies(element:any, names:string[]);
 
 /**
   The Game class is in charge of running the arena and coordinating all of the updates.
@@ -74,6 +77,8 @@ export class Game {
         showAngleIndicator:true,
       }
     });
+    insert_enemies(document.querySelector("#enemy-options"), Object.keys(this.enemy_ai_modules));
+    this.enemy_ai = Object.values(this.enemy_ai_modules)[0];
     if(!this.render) {
       throw new Error("Couldn't build a renderer!");
     }
@@ -93,6 +98,22 @@ export class Game {
     this.register_updates();
   }
 
+  addAllies(n:number) {
+    for(let i=0; i<n; i++) {
+      let ally = new Tank(0, Vector.create(200,200),this.globals);
+      ally.setCode('');
+      this.add_tank(ally);
+    }
+  }
+
+  addEnemies(n:number) {
+    for(let i=0; i<n; i++) {
+      let enemy = new Tank(1,Vector.create(200,200),this.globals);
+      enemy.setCode('');
+      this.add_tank(enemy);
+    }
+  }
+  
   setGlobals(api:any) {
     this.globals = api;
   }
@@ -108,6 +129,11 @@ export class Game {
   setEnemyAI(ai_name: string) {
     console.log(`Setting the AI to ${ai_name}`);
     this.enemy_ai = this.enemy_ai_modules[ai_name];
+    for(let tank of Object.values(this.tanks)) {
+      if(tank.team_id != 0) {
+        tank.setModule(new Script(this.enemy_ai, this.globals));
+      }
+    }
     this.reset();
   }
 
@@ -121,24 +147,18 @@ export class Game {
   }
 
   reset() {
-    let enemies = [
-      new Tank( 1, Vector.create(200,200), this.globals),
-      new Tank( 1, Vector.create(200,200), this.globals),
-      new Tank( 1, Vector.create(200,200), this.globals),
-    ];
-    let allies = [
-      new Tank( 0, Vector.create(200,200), this.globals), 
-      new Tank( 0, Vector.create(200,200), this.globals),
-      new Tank( 0, Vector.create(200,200), this.globals)
-    ];
-
-    for(let tank of allies) {
-      this.add_tank(tank);
+    for(let tank of Object.values(this.tanks)) {
+        tank.reset(this.engine);
     }
-    for(let tank of enemies) {
-      this.add_tank(tank);
+    for(let bullet of Object.values(this.bullets)) {
+      World.remove(this.engine.world, bullet.body);
     }
-    this.run();
+    this.bullets = [];
+     // add some tanks if there aren't any
+    if(Object.keys(this.tanks).length == 0) {
+      this.addAllies(3);
+      this.addEnemies(3);
+    }
   }
 
   // Connect the physics engine updates to the game state so the tanks get updated.
