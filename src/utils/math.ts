@@ -27,14 +27,16 @@ export class Ray {
   }
 }
 
+export function fmod(a:number, b:number) : number {
+  return a - Math.trunc(a/b)*b;
+}
 // Given two angles, return the shortest turn to get from `from_angle` to `to_angle`. 
 // No turn will ever be more than Math.PI, but it may be positive or negative.
 export function turnAngle(from_angle: number, to_angle: number):number {
   let pi2 = Math.PI*2;
-  let delta = fmod(fmod(to_angle, pi2) - fmod(from_angle, pi2), pi2);
-  console.log(`delta = ${delta}`);
+  let delta = fmod(to_angle - from_angle, pi2);
   if(Math.abs(delta) > Math.PI) {
-    delta -= Math.sign(delta)*Math.PI;
+    delta -= Math.sign(delta)*2*Math.PI;
   }
   return delta;
 }
@@ -48,9 +50,7 @@ export function limitAngle(angle:number):number {
   return shrunk;
 }
 
-export function fmod(a:number, b:number) : number {
-  return a - Math.trunc(a/b)*b;
-}
+
 
 export function clamp(value:number, min:number, max:number) : number {
   return Math.max(min, Math.min(max,value));
