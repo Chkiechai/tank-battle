@@ -158,7 +158,7 @@ export class Radar {
             let res:RadarHit = {
               distance:Vector.magnitude(Vector.sub(body.position,this.collision_shape.position)),
               angle:Vector.angle(Vector.create(1,0), body.position),
-              velocity:body.velocity,
+              velocity: body.velocity,
               energy: 0,
             };
 
