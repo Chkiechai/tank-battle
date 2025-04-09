@@ -2,11 +2,12 @@ import {Composite, Vector as Vector, Vertices} from 'matter-js';
 import {Bodies,Body,Engine} from 'matter-js';
 import { nstr, setw} from '../utils/string';
 import { limitAngle, angleRelativeTo } from '../utils/math';
-import Script from './script';
+import Script, { EmptyModule } from './script';
 import { Game } from '../game';
 import {Radar,RadarData} from './radar';
 import { Turret } from './turret';
 import Bullet from 'src/bullet/bullet';
+import { TankAPI } from 'tank-api';
 
 export type Controls = {
   turn_gun: number,
@@ -119,7 +120,9 @@ export function loop(api:TankAPI) {
     extra_globals.setControls= this.setControls.bind(this);
     extra_globals.getDeltaT= this.getDeltaT.bind(this);
 
-    this.code = new Script('', Script.addDefaultGlobals(extra_globals));
+    this.code = new Script(new EmptyModule(),
+      Script.addDefaultGlobals(extra_globals) as TankAPI);
+
     this.controls = {
       turn_gun: 0,
       turn_radar: 0,

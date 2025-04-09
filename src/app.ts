@@ -6,17 +6,24 @@ import Editor from "./editor";
 import {fmod, turnAngle, limitAngle, Ray, clamp} from './utils/math';
 
 declare function download(filename:string,content:string):void;
+declare function insert_enemies(element:any, names:string[]);
 
 let element = document.querySelector('#output');
 let editor = new Editor('monaco-editor-embed');
 editor.setup();
 
+insert_enemies(document.querySelector("#enemy-options"),["foo", "bar", "blab"]);
+
 let game = new Game();
 document.querySelector('#pauseButton').addEventListener('click', ()=>game.pause());
 document.querySelector('#stepButton').addEventListener('click', ()=>game.step());
 document.querySelector('#resumeButton').addEventListener('click', ()=>game.resume());
+document.querySelector('#enemy-options')
+  .addEventListener("change", (event:any)=>{
+  game.setEnemyAI(event.target.value);
+});
 
-let api_globals = { 
+let api_globals = {
   println:game.println.bind(game),
   pause: game.pause.bind(game),
   resume: game.resume.bind(game),
@@ -45,7 +52,7 @@ let tank1 = new Tank(
 tank1.onUpdate((self)=>element.innerHTML=`<p>${self.show()}</p>`, 10);
 
 editor.onShipCode((code:string)=>{
-  tank1.reset(game.engine); 
+  tank1.reset(game.engine);
   tank1.setCode(code);
   tank2.reset(game.engine);
   tank2.setCode(code);
@@ -59,4 +66,3 @@ document.querySelector('#downloadButton').addEventListener('click', ()=>{
 game.add_tank(tank1);
 game.add_tank(tank2);
 game.run();
-

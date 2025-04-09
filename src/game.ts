@@ -3,7 +3,8 @@ import {Events,Engine,Render,Bodies,Composite, Vector} from "matter-js";
 import Tank from "./tank/tank";
 import { Ray } from "./utils/math";
 import Bullet from "./bullet/bullet";
-
+import enemies from './enemy_ai/enemies';
+import {JsModule} from './tank/script';
 
 /**
   The Game class is in charge of running the arena and coordinating all of the updates.
@@ -19,6 +20,8 @@ export class Game {
   output:string[]
   bullets: {[key:number]:Bullet}
   paused:boolean
+  enemies: {[key:string]:JsModule}
+  enemy_ai: JsModule
 
   // The target frames per second for the physics simulation
   static SimFPS = 60;
@@ -88,6 +91,12 @@ export class Game {
     this.register_updates();
   }
 
+  setEnemyAI(ai_name: string) {
+    console.log(`Setting the AI to ${ai_name}`);
+    this.enemy_ai = this.enemies[ai_name];
+    this.reset();
+  }
+
   world():Composite {
     return this.engine.world;
   }
@@ -95,6 +104,38 @@ export class Game {
   add_bullet(bullet:Bullet) {
     this.bullets[bullet.body.id] = bullet;
     Composite.add(this.engine.world,bullet.body);
+  }
+
+  reset() {
+    let tank2 = new Tank(
+      1,
+      Vector.create(200,200),
+      api_globals
+    );
+
+    let tank1 = new Tank(
+      0, // team_id
+      Vector.create(200,200), // Position
+      api_globals // Extra global functions for the API
+    );
+
+    tank1.onUpdate((self)=>element.innerHTML=`<p>${self.show()}</p>`, 10);
+
+    editor.onShipCode((code:string)=>{
+      tank1.reset(game.engine);
+      tank1.setCode(code);
+      tank2.reset(game.engine);
+      tank2.setCode(code);
+      game.run();
+    });
+
+    document.querySelector('#downloadButton').addEventListener('click', ()=>{
+      download(`tank-${editor.contentHash().toString(16)}.ts`, editor.getCode());
+    });
+
+    this.add_tank(tank1);
+    this.add_tank(tank2);
+    this.run();
   }
 
   // Connect the physics engine updates to the game state so the tanks get updated.

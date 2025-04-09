@@ -60,6 +60,8 @@
   <div id="container">
     <div class="column">
       <div id="game"></div>
+      <select id="enemy-options"> </select>
+      </select>
       <div id="output">some test output</div>
     </div>
     <div class="column">
@@ -95,6 +97,16 @@
       });
   }
 
+  // enemies is a list of strings, which are the names of the enemy tank code
+  function insert_enemies(select_element, enemies){
+    for(let name of enemies) {
+      let opt = document.createElement("option");
+      opt.innerHTML = name;
+      opt.value = name;
+      select_element.appendChild(opt);
+    } 
+  }
+  
   // This is the function that lets the user download the contents of the text
   // editor as a file, with a name based on the version number.
   function download(filename, text) {
@@ -109,7 +121,6 @@
 
     document.body.removeChild(element);
   }
-  
   </script>
   <script src="dist/app.js"></script>
 </html>
