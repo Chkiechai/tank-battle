@@ -1,5 +1,6 @@
 import {Vector} from 'matter-js';
 export {Vector} from 'matter-js';
+import { Ray } from 'src/utils/math';
 
 export interface TankAPI {
   getControls: () => Controls,
@@ -9,6 +10,11 @@ export interface TankAPI {
   println: (...args:any[])=>void,
   pause: ()=>void,
   resume: ()=>void,
+  turnAngle: (from:number, to:number)=>number,
+  limitAngle: (ang:number) => number,
+  clamp: (num:number, min:number, max:number) => number,
+  fmod: (num:number, modulus: number) => number,
+  Ray: Ray,
 }
 
 export interface Controls {
