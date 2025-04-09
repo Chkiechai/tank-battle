@@ -4,6 +4,7 @@ import {TankAPI} from '../../tank-api';
 export declare class TankCode {
   update(api:TankAPI):void
 }
+
 export interface JsModule {
   setup(api:TankAPI):TankCode
 }

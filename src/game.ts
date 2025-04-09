@@ -5,7 +5,6 @@ import { Ray } from "./utils/math";
 import Bullet from "./bullet/bullet";
 import enemies from './enemy_ai/enemies';
 import {JsModule} from './tank/script';
-import { TankAPI } from "tank-api";
 
 /**
   The Game class is in charge of running the arena and coordinating all of the updates.
@@ -23,7 +22,7 @@ export class Game {
   paused:boolean
   enemy_ai_modules: {[key:string]:JsModule}
   enemy_ai: JsModule
-  globals: TankAPI
+  globals: any
   
   // The target frames per second for the physics simulation
   static SimFPS = 60;
@@ -57,6 +56,7 @@ export class Game {
 
   constructor() {
     this.engine = Engine.create();
+    this.enemy_ai_modules = enemies;
     this.engine.gravity.scale = 0;
     this.tanks = {};
     this.animation_id = undefined;
@@ -93,7 +93,7 @@ export class Game {
     this.register_updates();
   }
 
-  setGlobals(api:TankAPI) {
+  setGlobals(api:any) {
     this.globals = api;
   }
   

@@ -28,8 +28,6 @@ let api_globals = {
   println:game.println.bind(game),
   pause: game.pause.bind(game),
   resume: game.resume.bind(game),
-  // can't see how this could be used, but then again, it is very small...
-  // Even the wisest cannot see all ends.
   step: game.step.bind(game),
   turnAngle: turnAngle,
   limitAngle: limitAngle,
@@ -37,7 +35,7 @@ let api_globals = {
   fmod: fmod,
   Ray: Ray,
 };
-game.setGlobals(api_globals as TankAPI);
+game.setGlobals(api_globals);
 
 let tank2 = new Tank(
   1,
