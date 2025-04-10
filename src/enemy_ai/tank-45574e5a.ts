@@ -42,7 +42,7 @@ class Tank {
     }
     api.println(`Enemy hits: ${enemies.length}`);
     if (enemies.length>0) {
-      let enemy = enemies[0]
+      let enemy = enemies[0];
       let aim_turn = api.turnAngle(sensors.radar_angle+sensors.direction, enemy.angle);
       let radar_speed = aim_turn/api.getDeltaT();
       controls.turn_radar = api.clamp(radar_speed,-2*Math.PI,2*Math.PI);
