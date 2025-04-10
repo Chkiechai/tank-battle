@@ -44,7 +44,8 @@ export class Tank{
   static MaxAngularVelocity: number=Math.PI
   static Width:number = 20
   static Length:number = 25
-  static MaxEnergy: 1000
+  static MaxHitPoints:number = 1
+  static MaxEnergy:number= 1000
   static MaxSpeed:number = 200
   //static MaxRadarSpeed:number = 2*Math.PI
   //static RadarRange:number = 200
@@ -65,14 +66,14 @@ export function setup() {
 
 }
 
-export function loop(api:TankAPI) {
+export function loop(api:Globals) {
   let controls = api.getControls();
   let sensors = api.getSensors();
   //your code here.
   api.setControls(controls);
 }
 `;
-  constructor(team_id:number, pos:Vector, globals: Globals) {
+  constructor(team_id:number, pos:Vector, globals: Globals, game: Game) {
     this.dead = false;
     this.team_id = team_id;
     this.starting_pos = pos;
@@ -87,14 +88,17 @@ export function loop(api:TankAPI) {
     this.energy = this.max_energy;
     this.max_speed = 100;
     this.delta_t = 0.016;
-    this.radar = new Radar(this);
+    this.radar = new Radar(this,game);
     this.body.collisionFilter.category = Game.teamCollisionFilter(this.team_id);
     this.body.collisionFilter.mask = 0xffffffff;
     this.body.collisionFilter.group = 0;
     this.turret = new Turret(this);
-    this.hit_points = 1;
+    this.hit_points = Tank.MaxHitPoints;
     this.bullets = [];
 
+    if(typeof Tank.MaxEnergy == 'undefined') {
+      throw new Error("invalid tank");
+    }
 
     this.code = new Script(
       new EmptyModule(),
@@ -120,6 +124,8 @@ export function loop(api:TankAPI) {
     this.dead = true
     this.body.friction = 0.5;
     this.body.frictionAir = 0.5;
+    this.energy = 0;
+    this.hit_points = 0;
     this.radar.set_visible(false);
   }
 
@@ -179,6 +185,7 @@ export function loop(api:TankAPI) {
     }
     this.dead = false;
     this.energy = Tank.MaxEnergy;
+    this.hit_points = Tank.MaxHitPoints;
     this.controls = Tank.DefaultControls;
     this.bullets = [];
     this.radar.reset();
@@ -189,6 +196,9 @@ export function loop(api:TankAPI) {
   // Go through all of the controls and update the tank properties based on
   // what the code says to do.
   update(delta_t: number, game:Game) {
+    if(typeof this.energy == 'undefined'){
+      throw new Error("Energy is undefined");
+    }
     if (this.dead) {
       this.stop();
     } else {

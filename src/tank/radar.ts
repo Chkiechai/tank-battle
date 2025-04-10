@@ -1,7 +1,6 @@
 import { Bodies, Body, Pair, Vector } from "matter-js"
 import {Game} from "../game";
 import {Tank} from "./tank";
-import {nstr} from "../utils/string";
 import { clamp,limitAngle, Ray } from "../utils/math";
 import {RadarData,RadarHit} from '../globals';
 
@@ -14,6 +13,7 @@ export class Radar {
   team_id: number // The team number of the tank that owns this radar
   tank_id: number // the tank's id number
   hits: RadarData
+  game: Game // for looking up tanks by id
   
   static MaxTurnSpeed: number = 2*Math.PI // fastest allowed turning speed
   static Range: number = 300
@@ -25,14 +25,15 @@ export class Radar {
       bullets:[]
     }
   }
-  
-  constructor(tank: Tank, range: number = Radar.Range) {
+
+  constructor(tank: Tank, game:Game, range: number = Radar.Range) {
     this.hits = Radar.EmptyHits();
     this.range = range;
     this.sweep = Math.sin(Radar.MaxTurnSpeed)*this.range;
     this.turn_speed = 0;
     this.team_id = tank.team_id;
     this.tank_id = tank.id();
+    this.game = game;
     console.log(`Radar setup: tank_id = ${this.tank_id}, team_id = ${this.team_id}`);
     this.setup_shape(tank.body.position);
   }
@@ -41,12 +42,12 @@ export class Radar {
     // Make the radar intersection shape (a circular-ish sector)
     let half_ms = Radar.MaxTurnSpeed/(2*Game.SimFPS);
     let verts = [
-        [0,-Math.sin(half_ms)/3],
-        [Math.cos(half_ms),-Math.sin(half_ms)],
-        [1,0],
-        [Math.cos(half_ms),Math.sin(half_ms)],
-        [0,Math.sin(half_ms)/3]
-      ].map((pt)=>Vector.mult(Vector.create(pt[0],pt[1]),this.range));
+      [0,-Math.sin(half_ms)/3],
+      [Math.cos(half_ms),-Math.sin(half_ms)],
+      [1,0],
+      [Math.cos(half_ms),Math.sin(half_ms)],
+      [0,Math.sin(half_ms)/3]
+    ].map((pt)=>Vector.mult(Vector.create(pt[0],pt[1]),this.range));
     this.collision_shape = Bodies.fromVertices(0,0,[verts],
       {
         label:"radar",
@@ -61,11 +62,12 @@ export class Radar {
     this.collision_shape.frictionAir = 0;
     Body.setCentre(this.collision_shape, Vector.create(this.collision_shape.bounds.min.x+1,0));
     Body.setPosition(this.collision_shape, pos);
-    
+
     this.collision_shape.render.fillStyle = '#fff';
     this.collision_shape.collisionFilter.category = Game.RadarCollisionFilter;
     // collide with anything but other radars
     this.collision_shape.collisionFilter.mask = ~(Game.RadarCollisionFilter); 
+    this.collision_shape.collisionFilter.group = 0; // use the mask/category rules
   }
 
   reset() {
@@ -73,7 +75,7 @@ export class Radar {
     this.hits = Radar.EmptyHits();
     this.turn_speed = 0;
   }
-  
+
   update(delta_t:number,tank:Tank) {
     this.turn_speed = clamp(
       tank.controls.turn_radar, 
@@ -84,7 +86,7 @@ export class Radar {
     Body.setPosition(this.collision_shape, tank.body.position);
     this.set_visible(tank.controls.show_radar);
   }
-  
+
   set_visible(vis:boolean) {
     this.collision_shape.render.visible = vis;   
   }
@@ -92,7 +94,7 @@ export class Radar {
   same_team(body:Body):boolean {
     return (
       Game.teamCollisionFilter(this.team_id) 
-      & Game.teamCollisionFilter(body.collisionFilter.category)) 
+        & Game.teamCollisionFilter(body.collisionFilter.category)) 
       != 0;
   }
 
@@ -142,15 +144,18 @@ export class Radar {
         default:
           if(body.id != this.tank_id) {
             //this.set_visible(true);
-            //console.log("WARNING: Radar Hit returning zero energy, need to figure out how to look up tank from body");
+            let other_tank = this.game.getTankById(body.id);
+            console.log(`Radar hit: tank ${this.tank_id}(team ${this.team_id}) detected ${body.id}(team ${other_tank.team_id}) energy=${other_tank.hit_points}`);
+            if(!other_tank) {
+              console.log("WARNING: Radar Hit returning zero energy, need to figure out how to look up tank from body");
+            }
             let res:RadarHit = {
               distance:Vector.magnitude(Vector.sub(body.position,this.collision_shape.position)),
-              angle:Vector.angle(Vector.create(1,0), body.position),
+              angle:Vector.angle(this.collision_shape.position, body.position),
               velocity: body.velocity,
-              energy: 0,
+              energy: other_tank.hit_points,
             };
-
-            if(this.same_team(body)) {
+            if(other_tank.team_id == this.team_id) {
               result.allies.push(res);
             } else {
               result.enemies.push(res);
@@ -165,7 +170,7 @@ export class Radar {
   angle():number {
     return this.collision_shape.angle;
   }
-  
+
   get_hits():RadarData {
     return this.hits;
   }

@@ -6,9 +6,9 @@ import Bullet from "./bullet/bullet";
 import enemies from './enemy_ai/enemies';
 import {JsModule} from './tank/script';
 import { Script } from './tank/script';
-import Globals from "./globals";
+import {Globals} from "./globals";
 
-declare function insert_enemies(element:any, names:string[]);
+declare function insert_enemies(element:any, names:string[]):void;
 
 /**
   The Game class is in charge of running the arena and coordinating all of the updates.
@@ -100,7 +100,7 @@ export class Game {
 
   addAllies(n:number) {
     for(let i=0; i<n; i++) {
-      let ally = new Tank(0, Vector.create(200,200),new Globals().withGame(this));
+      let ally = new Tank(0, Vector.create(200,200),new Globals().withGame(this),this);
       ally.setCode('');
       this.add_tank(ally);
     }
@@ -108,7 +108,7 @@ export class Game {
 
   addEnemies(n:number) {
     for(let i=0; i<n; i++) {
-      let enemy = new Tank(1,Vector.create(200,200),new Globals().withGame(this));
+      let enemy = new Tank(1,Vector.create(200,200),new Globals().withGame(this),this);
       enemy.setCode('');
       this.add_tank(enemy);
     }
@@ -133,6 +133,15 @@ export class Game {
     this.reset();
   }
 
+  getTankById(id:number):Tank|null {
+    if(id in this.tanks) {
+      return this.tanks[id];
+    } else {
+      console.log(`WARNING: No tank found for id ${id}`);
+      return null;
+    }
+  }
+  
   world():Composite {
     return this.engine.world;
   }
@@ -189,36 +198,36 @@ export class Game {
     Events.on(this.engine, 'collisionStart', (event)=>{
       for(let pair of event.pairs){
         if(pair.bodyA.label == 'Bullet') {
-          console.log(`Bullet(A, id=${pair.bodyA.id}) hit: ${pair.bodyB.label}`);
+          //////console.log(`Bullet(A, id=${pair.bodyA.id}) hit: ${pair.bodyB.label}`);
           if(pair.bodyB.label != 'radar') {
             let b = this.bullets[pair.bodyA.id];
             if(pair.bodyB.label == 'Tank Body') {
               // We should damage the tank here!
-              console.log(`Tank ${pair.bodyB.id} is taking damage`);
-              console.log(`All tank ids: ${Object.keys(this.tanks).join(', ')}`);
+              //console.log(`Tank ${pair.bodyB.id} is taking damage`);
+              //console.log(`All tank ids: ${Object.keys(this.tanks).join(', ')}`);
               let tank_id = pair.bodyB.id;
               this.tanks[tank_id].take_damage(b.damage());
             }
             if(b) {
               b.dead = true;
-              console.log("bullet a marked dead");
+              //console.log("bullet a marked dead");
               //delete this.bullets[pair.bodyA.id];
             }
           }
         }
         if(pair.bodyB.label == 'Bullet') {
-          console.log(`Bullet(B, id=${pair.bodyB.id}) hit: ${pair.bodyA.label}`);
+          //console.log(`Bullet(B, id=${pair.bodyB.id}) hit: ${pair.bodyA.label}`);
           if(pair.bodyA.label != 'radar') {
             let b = this.bullets[pair.bodyB.id];
             if(pair.bodyA.label == 'Tank Body') {
               let tank_id = pair.bodyA.id;
-              console.log(`Tank ${tank_id} is taking damage`);
-              console.log(`All tank ids: ${Object.keys(this.tanks).join(', ')}`);
+              //console.log(`Tank ${tank_id} is taking damage`);
+              //console.log(`All tank ids: ${Object.keys(this.tanks).join(', ')}`);
               this.tanks[tank_id].take_damage(b.damage());
             }
             if(b) {
               b.dead = true;
-              console.log("bullet b marked dead");
+              //console.log("bullet b marked dead");
               //delete this.bullets[pair.bodyB.id];
             }
           }

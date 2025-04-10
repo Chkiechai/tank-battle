@@ -23,7 +23,7 @@ export interface RadarHit  {
   distance:number,
   angle:number,
   velocity: Vector,
-  energy: number|undefined,
+  energy: number,
 }
 
 export interface Sensors  {

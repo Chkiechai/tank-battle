@@ -1,4 +1,4 @@
-import Globals from '../globals';
+import {Globals} from '../globals';
 
 export declare class TankCode {
   update(api:Globals):void
@@ -61,7 +61,7 @@ export class Script{
 
   execute() {
     if(typeof(this.runner) == 'object') {
-      console.log(`updating tank, globals = ${Object.keys(this.globals).join(', ')}`)
+      //console.log(`updating tank, globals = ${Object.keys(this.globals).join(', ')}`)
       this.runner.update(this.globals);
     }
   }

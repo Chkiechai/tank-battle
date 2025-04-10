@@ -9,7 +9,7 @@ export default class Bullet {
   dead: boolean;
 
   static Speed:number = Tank.MaxSpeed * 3;
-
+  
   constructor(position:Vector, velocity:Vector, energy:number) {
     this.body = Bodies.circle(position.x,position.y,3);
     this.body.isSensor = true;
@@ -33,7 +33,7 @@ export default class Bullet {
   update(_dt:number, game: Game) {
     //console.log(`Update Bullet id ${this.body.id}`);
     if(this.dead){
-      console.log(`Bullet id ${this.body.id} being removed.`);
+      //console.log(`Bullet id ${this.body.id} being removed.`);
       Composite.remove(game.world(), this.body);
     }
   }
