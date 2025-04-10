@@ -1,7 +1,7 @@
 
 
 import { Bodies, Body, Vector } from "matter-js"
-import {Tank} from "./tank";
+import {RenderStyle, Tank} from "./tank";
 import {clamp,limitAngle } from "../utils/math";
 import Bullet from "src/bullet/bullet";
 import { Game } from "src/game";
@@ -38,13 +38,26 @@ export class Turret {
       },
       render:{
         opacity:1,
-        fillStyle: '#141',
+        fillStyle: '#bbb',
+        lineWidth: 1,
         visible:true,
       }
 
     });
     let turret = Bodies.rectangle(0,0,12,9);
+    turret.render = {
+        opacity:1,
+        fillStyle: '#bbb',
+        lineWidth: 1,
+        visible:true,
+      };
     let barrel = Bodies.rectangle(15,0,18,2);
+    barrel.render={
+        opacity:1,
+        fillStyle: '#bbb',
+        lineWidth: 1,
+        visible:true,
+      };
     Body.setParts(this.shape,[turret,barrel]);
     Body.setCentre(this.shape, Vector.create(this.shape.bounds.min.x+6,0));
     Body.setPosition(this.shape,pos);
@@ -52,6 +65,9 @@ export class Turret {
 
   reset() {
     Body.setAngle(this.shape,0);
+    this.shape.render.opacity = 1;
+    this.shape.render.fillStyle = '#bbb';
+    this.shape.render.lineWidth=1;
     this.angle = 0;
     this.energy = Turret.MaxEnergy;
     this.turn_speed = 0;
@@ -76,7 +92,7 @@ export class Turret {
   // and incorporating the speed of the tank it was fired from. The shot_energy is used
   // to compute the damage.
 
-  fire(shot_energy:number,initial_velocity:Vector): Bullet|undefined {
+  fire(shot_energy:number,initial_velocity:Vector, tank_style:RenderStyle): Bullet|undefined {
     //let bullet = new Bullet(// oh noeeessss)
     // need a position and a velocity
     // The barrel length is in Turret.BarrelLength
@@ -94,6 +110,6 @@ export class Turret {
     );// konichiwa
     let endOfGun: Vector = Vector.add(this.shape.position, barrelDisp);
     let bulletVel: Vector = Vector.add(initial_velocity, Vector.mult(Vector.normalise(barrelDisp), Bullet.Speed*Game.FixedDt));
-    return new Bullet(endOfGun, bulletVel, shot_energy);
+    return new Bullet(endOfGun, bulletVel, shot_energy,tank_style);
   }
 }

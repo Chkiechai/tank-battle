@@ -75,6 +75,7 @@ export class Game {
         height: Game.bounds.height,
         width: Game.bounds.width,
         showAngleIndicator:true,
+        wireframes: false,
       }
     });
     insert_enemies(document.querySelector("#enemy-options"), Object.keys(this.enemy_ai_modules));
@@ -101,6 +102,11 @@ export class Game {
   addAllies(n:number) {
     for(let i=0; i<n; i++) {
       let ally = new Tank(0, Vector.create(200,200),new Globals().withGame(this),this);
+      ally.setStyle({
+          fillStyle:'#333399',
+          lineWidth: 0,
+          opacity: 1,
+        })
       ally.setCode('');
       this.add_tank(ally);
     }
@@ -109,6 +115,11 @@ export class Game {
   addEnemies(n:number) {
     for(let i=0; i<n; i++) {
       let enemy = new Tank(1,Vector.create(200,200),new Globals().withGame(this),this);
+      enemy.setStyle({
+        fillStyle: '#993333',
+        lineWidth: 0,
+        opacity: 1,
+      });
       enemy.setCode('');
       this.add_tank(enemy);
     }

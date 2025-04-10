@@ -19,6 +19,12 @@ import {Globals,Controls,Sensors,RadarData} from '../globals';
 // to control the rest of it. See the tank-api.ts file for details about what's in the
 // sensors and controls.
 
+export interface RenderStyle {
+  fillStyle?: string,
+  lineWidth?: number,
+  opacity?: number,
+}
+
 export class Tank{
   dead:boolean
   wheel_base:number
@@ -77,7 +83,13 @@ export function loop(api:Globals) {
     this.dead = false;
     this.team_id = team_id;
     this.starting_pos = pos;
-    this.body = Bodies.rectangle(pos.x, pos.y, Tank.Length, Tank.Width,{label:"Tank Body"});
+    this.body = Bodies.rectangle(pos.x, pos.y, Tank.Length, Tank.Width,{
+      render:{
+        opacity: 1,
+        lineWidth:1,
+      },
+      label:"Tank Body"
+    });
     this.body.frictionAir = 0;
     this.max_energy = Tank.MaxEnergy;
     this.wheel_base = Tank.Width;
@@ -115,6 +127,12 @@ export function loop(api:Globals) {
     };
   }
 
+  setStyle(style:RenderStyle) {
+    for(let key of Object.keys(style)){
+      this.body.render[key] = style[key];
+    }
+  }
+  
   // A unique identifier number for each tank
   id():number {
     return this.body.id;
@@ -215,7 +233,7 @@ export function loop(api:Globals) {
     this.left_speed = this.controls.left_track_speed;
     this.right_speed = this.controls.right_track_speed;
     if(this.controls.fire_gun>0) {
-      let bullet = this.turret.fire(this.controls.fire_gun, this.body.velocity);
+      let bullet = this.turret.fire(this.controls.fire_gun, this.body.velocity,this.body.render);
       if(bullet) {
         game.add_bullet(bullet);
       }

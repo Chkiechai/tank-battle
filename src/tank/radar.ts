@@ -54,8 +54,8 @@ export class Radar {
         isSensor:true,
         render:{ // this doesn't seem to work at all, so I need to investigate.
           visible:false,
-          opacity: 0.5,
-          fillStyle: '#fff',
+          opacity: 0.1,
+          fillStyle: '#888',
           lineWidth: 0,
         }
       });

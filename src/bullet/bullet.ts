@@ -1,6 +1,6 @@
 import { Bodies, Body, Composite, Engine, Vector } from "matter-js";
 import { Game } from "src/game";
-import {Tank} from "src/tank/tank";
+import {RenderStyle, Tank} from "src/tank/tank";
 import { vecstr } from "src/utils/string";
 
 export default class Bullet {
@@ -10,7 +10,7 @@ export default class Bullet {
 
   static Speed:number = Tank.MaxSpeed * 3;
   
-  constructor(position:Vector, velocity:Vector, energy:number) {
+  constructor(position:Vector, velocity:Vector, energy:number, style:RenderStyle) {
     this.body = Bodies.circle(position.x,position.y,3);
     this.body.isSensor = true;
     this.body.frictionAir = 0;
@@ -19,6 +19,7 @@ export default class Bullet {
     this.body.collisionFilter.mask = 0xffffffff;
     this.body.collisionFilter.group = 0;
     this.body.collisionFilter.category = Game.BulletCollisionFilter;
+    this.body.render = style;
 
     Body.setVelocity(this.body, velocity);
     this.body.label = "Bullet";
