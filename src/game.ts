@@ -249,7 +249,8 @@ export class Game {
 
   updateOutput() {
     let tank_poses = Object.values(this.tanks).map((t) => t.show());
-    let out = `<pre>${tank_poses.join('\n')}\nBullets: ${Object.keys(this.bullets).length}\n${this.output.join('\n')}</pre>`;
+    //let out = `<pre>${tank_poses.join('\n')}\nBullets: ${Object.keys(this.bullets).length}\n${this.output.join('\n')}</pre>`;
+    let out = `<pre>${this.output.join('\n')}</pre>`;
     document.querySelector('#output').innerHTML = out;
   }
 
