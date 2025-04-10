@@ -77,6 +77,9 @@ export class Radar {
   }
 
   update(delta_t:number,tank:Tank) {
+    if(tank.dead){
+      return;
+    }
     this.turn_speed = clamp(
       tank.controls.turn_radar, 
       -Radar.MaxTurnSpeed, 
