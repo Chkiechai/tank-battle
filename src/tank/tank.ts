@@ -4,29 +4,10 @@ import { nstr, setw} from '../utils/string';
 import { limitAngle, angleRelativeTo } from '../utils/math';
 import {Script, EmptyModule } from './script';
 import { Game } from '../game';
-import {Radar,RadarData} from './radar';
+import {Radar} from './radar';
 import { Turret } from './turret';
 import Bullet from 'src/bullet/bullet';
-import { TankAPI } from 'tank-api';
-
-export type Controls = {
-  turn_gun: number,
-  turn_radar: number,
-  left_track_speed: number,
-  right_track_speed: number,
-  fire_gun: number, // equals power to apply to the bullet
-  show_radar: boolean,
-}
-
-export type Sensors = {
-  radar_hits: RadarData,
-  speed: number,
-  direction: number,
-  gun_angle: number,
-  radar_angle: number,
-  energy: number,
-  impact: boolean,
-}
+import {Globals,Controls,Sensors,RadarData} from '../globals';
 
 // Questions:
 //   - How do I make this thing have collision detection? - use Body isSensor
@@ -78,7 +59,7 @@ export class Tank{
     };
 
   static DefaultCode = `
-import {TankAPI,Controls,Sensors} from './tank-api';
+import {Globals,Controls,Sensors,RadarHit,RadarData} from './tank-api';
 
 export function setup() {
 
@@ -91,7 +72,7 @@ export function loop(api:TankAPI) {
   api.setControls(controls);
 }
 `;
-  constructor(team_id:number, pos:Vector, extra_globals: any) {
+  constructor(team_id:number, pos:Vector, globals: Globals) {
     this.dead = false;
     this.team_id = team_id;
     this.starting_pos = pos;
@@ -114,15 +95,10 @@ export function loop(api:TankAPI) {
     this.hit_points = 1;
     this.bullets = [];
 
-    // Add globals for the tank
-    extra_globals.getSensors= this.getSensors.bind(this);
-    extra_globals.getControls= this.getControls.bind(this);
-    extra_globals.setControls= this.setControls.bind(this);
-    extra_globals.getDeltaT= this.getDeltaT.bind(this);
 
     this.code = new Script(
       new EmptyModule(),
-      Script.addDefaultGlobals(extra_globals) as TankAPI
+      globals.withTank(this),
     );
 
     this.controls = {
@@ -287,11 +263,11 @@ export function loop(api:TankAPI) {
     } as Sensors;
   }
 
-  getControls() {
+  getControls():Controls {
     return this.controls;
   }
 
-  getDeltaT() {
+  getDeltaT():number {
     return this.delta_t;
   }
 

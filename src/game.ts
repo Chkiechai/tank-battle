@@ -6,6 +6,7 @@ import Bullet from "./bullet/bullet";
 import enemies from './enemy_ai/enemies';
 import {JsModule} from './tank/script';
 import { Script } from './tank/script';
+import Globals from "./globals";
 
 declare function insert_enemies(element:any, names:string[]);
 
@@ -25,7 +26,6 @@ export class Game {
   paused:boolean
   enemy_ai_modules: {[key:string]:JsModule}
   enemy_ai: JsModule
-  globals: any
   
   // The target frames per second for the physics simulation
   static SimFPS = 60;
@@ -98,32 +98,20 @@ export class Game {
     this.register_updates();
   }
 
-  cloneGlobals():any {
-    let result = {};
-    for(let pair of Object.entries(this.globals)) {
-      result[pair[0]] = pair[1];
-    }
-    return result;
-  }
-  
   addAllies(n:number) {
-  //  for(let i=0; i<n; i++) {
-  //    let ally = new Tank(0, Vector.create(200,200),this.cloneGlobals());
-  //    ally.setCode('');
-  //    this.add_tank(ally);
-  //  }
+    for(let i=0; i<n; i++) {
+      let ally = new Tank(0, Vector.create(200,200),new Globals().withGame(this));
+      ally.setCode('');
+      this.add_tank(ally);
+    }
   }
 
   addEnemies(n:number) {
     for(let i=0; i<n; i++) {
-      let enemy = new Tank(1,Vector.create(200,200),this.cloneGlobals());
+      let enemy = new Tank(1,Vector.create(200,200),new Globals().withGame(this));
       enemy.setCode('');
       this.add_tank(enemy);
     }
-  }
-  
-  setGlobals(api:any) {
-    this.globals = api;
   }
   
   setAllyCode(code:string) {
@@ -139,7 +127,7 @@ export class Game {
     this.enemy_ai = this.enemy_ai_modules[ai_name];
     for(let tank of Object.values(this.tanks)) {
       if(tank.team_id != 0) {
-        tank.setModule(new Script(this.enemy_ai, this.globals));
+        tank.setModule(new Script(this.enemy_ai, new Globals().withGame(this).withTank(tank)));
       }
     }
     this.reset();

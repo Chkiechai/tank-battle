@@ -3,20 +3,8 @@ import {Game} from "../game";
 import {Tank} from "./tank";
 import {nstr} from "../utils/string";
 import { clamp,limitAngle, Ray } from "../utils/math";
+import {RadarData,RadarHit} from '../globals';
 
-export type RadarData = {
-  wall: number,
-  enemies: RadarHit[],
-  allies: RadarHit[],
-  bullets: RadarHit[],
-}
-
-export type RadarHit = {
-  distance:number,
-  angle:number,
-  velocity: Vector,
-  energy: number|undefined,
-}
 
 export class Radar {
   range: number // distance the beam reaches

@@ -1,4 +1,4 @@
-import { TankAPI, Controls, Sensors } from '.../../tank-api';
+import { Globals, Controls } from '../globals';
 
 export default function setup() {
   return new Tank();
@@ -24,7 +24,7 @@ class Tank {
     controls.right_track_speed = 0;
   }
 
-  update_gun(api: TankAPI) {
+  update_gun(api: Globals) {
     let controls = api.getControls();
     let sensors = api.getSensors();
     let aim_error = sensors.radar_angle - sensors.gun_angle
@@ -50,7 +50,7 @@ class Tank {
     }
   }
 
-  update(api: TankAPI) {
+  update(api: Globals) {
     this.update_gun(api);
     this.dt = api.getDeltaT();
     this.time += this.dt;
@@ -63,24 +63,24 @@ class Tank {
 class State {
   //let controls = api.getControls();
   //let sensors = api.getSensors();
-  update(dt: number, api: TankAPI, tank: Tank): string {
+  update(dt: number, api: Globals, tank: Tank): string {
     return "no_change";
   }
 
-  enter(api: TankAPI): string {
+  enter(api: Globals): string {
     return "no_change";
   }
 
-  leave(api: TankAPI) {
+  leave(api: Globals) {
   }
 }
 
 class Init extends State {
-  update(dt: number, api: TankAPI, tank: Tank): string {
+  update(dt: number, api: Globals, tank: Tank): string {
     return "forward";
   }
 
-  enter(api: TankAPI): string {
+  enter(api: Globals): string {
     let controls = api.getControls();
     api.setControls(controls);
     controls.left_track_speed = 0;
@@ -112,12 +112,12 @@ class Forward extends State {
     this.moved_already = 0;
   }
 
-  enter(api: TankAPI): string {
+  enter(api: Globals): string {
     this.moved_already = 0;
     return "no_change";
   }
 
-  update(dt: number, api: TankAPI, tank: Tank): string {
+  update(dt: number, api: Globals, tank: Tank): string {
     let controls = api.getControls();
     if (this.moved_already >= this.distance) {
       return this.next_state;
@@ -150,12 +150,12 @@ class Turn extends State {
     this.half_wheel_base = 10;
   }
 
-  enter(api: TankAPI): string {
+  enter(api: Globals): string {
     this.target_angle = api.getSensors().direction + this.angleAmount
     return "no_change";
   }
 
-  update(dt: number, api: TankAPI, tank: Tank): string {
+  update(dt: number, api: Globals, tank: Tank): string {
     let controls = api.getControls();
     let sensors = api.getSensors();
     let trackSpeed = (this.half_wheel_base * (this.target_angle - sensors.direction)) / dt;
@@ -211,13 +211,13 @@ class Robot {
   }
 
 
-  update(dt: number, api: TankAPI, tank: Tank): Controls {
+  update(dt: number, api: Globals, tank: Tank): Controls {
     let new_state = this.states[this.current_state].update(dt, api, tank);
     this.switch_to(api, tank, new_state);
     return api.getControls();
   }
 
-  switch_to(api: TankAPI, tank: Tank, new_state: string) {
+  switch_to(api: Globals, tank: Tank, new_state: string) {
     if (new_state == "no_change") {
       return;
     }

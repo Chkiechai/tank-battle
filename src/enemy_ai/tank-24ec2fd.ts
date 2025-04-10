@@ -1,4 +1,4 @@
-import { TankAPI, Controls, Sensors } from '../../tank-api';
+import {Globals,Controls} from '../globals';
 
 export default function setup() {
   return new Tank()
@@ -7,7 +7,7 @@ export default function setup() {
 class Tank {
   static max_speed: number = 200;
   static wheel_base: number = 20;
-  steps: ((api: TankAPI) => boolean)[];
+  steps: ((api: Globals) => boolean)[];
   time: number = 0;
   step: number = 0;
   id: number;
@@ -40,7 +40,7 @@ class Tank {
     controls.turn_radar = 0;
   }
 
-  update(api: TankAPI) {
+  update(api: Globals) {
     let controls = api.getControls();
     let sensors = api.getSensors();
     controls.fire_gun = 0.5;
@@ -103,9 +103,9 @@ class Tank {
 
   // Create a closure that will continue to turn the tank until it reaches
   // the target angle (in radians). It will return true when it finishes.
-  turn_builder(target_angle: number): (api: TankAPI) => boolean {
+  turn_builder(target_angle: number): (api: Globals) => boolean {
     let max_turn_speed = Tank.max_speed / (Tank.wheel_base / 2);
-    return (api: TankAPI) => {
+    return (api: Globals) => {
       let delta_ang = this.ccw_turn(target_angle, api.getSensors().direction);
       api.println("ccw turn is ", delta_ang);
       if (Math.abs(delta_ang) > Math.PI) {
@@ -135,9 +135,9 @@ class Tank {
 
   // Return a closure that will incrementally move the tank until it has
   // moved by distance. It will return true when the move is complete.
-  move_builder(distance: number): (api: TankAPI) => boolean {
+  move_builder(distance: number): (api: Globals) => boolean {
     let moved_already = 0;
-    return (api: TankAPI) => {
+    return (api: Globals) => {
       let controls = api.getControls();
       if (Math.abs(moved_already - distance) < 0.01) {
         this.stop(controls);

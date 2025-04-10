@@ -1,20 +1,19 @@
-import {Vector} from 'matter-js';
-import {TankAPI} from '../../tank-api';
+import Globals from '../globals';
 
 export declare class TankCode {
-  update(api:TankAPI):void
+  update(api:Globals):void
 }
 
 export interface JsModule {
-  setup(api:TankAPI):TankCode
+  setup(api:Globals):TankCode
 }
 
 export class EmptyTank {
-  update(api:TankAPI) {}
+  update(api:Globals) {}
 }
 
 export class EmptyModule {
-  setup(api:TankAPI) {
+  setup(api:Globals) {
     return new EmptyTank();
   }
 }
@@ -22,26 +21,13 @@ export class EmptyModule {
 export class Script{
   js_module: JsModule
   runner: TankCode
-  globals: TankAPI
-
-
-  static addDefaultGlobals(extras:{[key:string]:any}): {[key:string]:any} {
-    let globals = {};
-    globals['log'] = console.log;
-    globals['Math'] = Math;
-    globals['Vector'] = Vector;
-
-    for(let kv of Object.entries(extras)) {
-      globals[kv[0]] = kv[1];
-    }
-    return globals;
-  }
+  globals: Globals
 
   static async scriptImport(code:string):Promise<any> {
     return window['script_loader'](code)
   }
 
-  constructor(module: JsModule, globals:TankAPI) {
+  constructor(module: JsModule, globals:Globals) {
     console.log("Calling setup now..."+module);
     console.log(`Globals has: ${Object.keys(globals).join(',')}`);
     this.globals = globals;
@@ -49,11 +35,7 @@ export class Script{
     this.js_module = module;
   }
 
-  static async from_source(
-    js_code:string,
-    globals_=Script.addDefaultGlobals({})):Promise<void|Script>
-  {
-    let globals:TankAPI = globals_ as TankAPI;
+  static async from_source(js_code:string, globals:Globals):Promise<void|Script> {
     return await Script.scriptImport(js_code)
       .then((module:any) => {
         return new Script(module,globals);
