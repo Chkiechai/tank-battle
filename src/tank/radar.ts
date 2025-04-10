@@ -1,6 +1,6 @@
 import { Bodies, Body, Pair, Vector } from "matter-js"
 import {Game} from "../game";
-import Tank from "./tank";
+import {Tank} from "./tank";
 import {nstr} from "../utils/string";
 import { clamp,limitAngle, Ray } from "../utils/math";
 
@@ -154,7 +154,7 @@ export class Radar {
         default:
           if(body.id != this.tank_id) {
             //this.set_visible(true);
-            console.log("WARNING: Radar Hit returning zero energy, need to figure out how to look up tank from body");
+            //console.log("WARNING: Radar Hit returning zero energy, need to figure out how to look up tank from body");
             let res:RadarHit = {
               distance:Vector.magnitude(Vector.sub(body.position,this.collision_shape.position)),
               angle:Vector.angle(Vector.create(1,0), body.position),

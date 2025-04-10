@@ -1,7 +1,7 @@
 
 
 import { Bodies, Body, Vector } from "matter-js"
-import Tank from "./tank";
+import {Tank} from "./tank";
 import {clamp,limitAngle } from "../utils/math";
 import Bullet from "src/bullet/bullet";
 import { Game } from "src/game";

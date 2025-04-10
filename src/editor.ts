@@ -1,5 +1,5 @@
 import MurmurHash3 from 'imurmurhash';
-import Tank from './tank/tank';
+import {Tank} from './tank/tank';
 
 declare var require:any;
 declare global {

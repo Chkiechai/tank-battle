@@ -38,7 +38,7 @@ export type Sensors = {
 // to control the rest of it. See the tank-api.ts file for details about what's in the
 // sensors and controls.
 
-export default class Tank{
+export class Tank{
   dead:boolean
   wheel_base:number
   energy: number
@@ -207,7 +207,7 @@ export function loop(api:TankAPI) {
     this.bullets = [];
     this.radar.reset();
     this.turret.reset();
-    this.code.update('');
+    //this.code.update('');
   }
 
   // Go through all of the controls and update the tank properties based on

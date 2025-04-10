@@ -11,11 +11,12 @@ class Tank {
   half_wheel_base = 10;
   max_speed = 200;
   robot: Robot;
-
+  id:number;
+  
   constructor() {
     this.time = 0;
     this.robot = new Robot();
-
+    this.id = Math.trunc(Math.random()*10000);
   }
 
   stop(controls: Controls) {
@@ -46,9 +47,7 @@ class Tank {
     } else {
 
       controls.turn_radar = Math.PI * 2;
-
     }
-
   }
 
   update(api: TankAPI) {
@@ -56,6 +55,7 @@ class Tank {
     this.dt = api.getDeltaT();
     this.time += this.dt;
     let controls: Controls = this.robot.update(this.dt, api, this);
+    api.println(`4557 id=${this.id}`);
     api.setControls(controls);
   }
 }

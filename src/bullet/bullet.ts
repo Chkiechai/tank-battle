@@ -1,6 +1,6 @@
 import { Bodies, Body, Composite, Engine, Vector } from "matter-js";
 import { Game } from "src/game";
-import Tank from "src/tank/tank";
+import {Tank} from "src/tank/tank";
 import { vecstr } from "src/utils/string";
 
 export default class Bullet {

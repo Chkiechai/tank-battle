@@ -10,9 +10,11 @@ class Tank {
   steps: ((api: TankAPI) => boolean)[];
   time: number = 0;
   step: number = 0;
+  id: number;
 
   constructor() {
     this.steps =  [];
+    this.id = Math.trunc(Math.random()*10000);
     this.reset();
   }
 
@@ -45,6 +47,7 @@ class Tank {
     //api.pause();
     api.println("Radar angle: ", sensors.radar_angle);
     this.time += api.getDeltaT();
+    api.println(`24ec Id = ${this.id}`);
     api.println("Time = ", this.time);
     api.println("delta_t = ", api.getDeltaT());
     controls.turn_radar = 0.9;

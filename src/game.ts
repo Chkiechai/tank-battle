@@ -1,6 +1,6 @@
 
 import {Events,Engine,Render,Bodies,Composite, Vector, World} from "matter-js";
-import Tank from "./tank/tank";
+import {Tank} from "./tank/tank";
 import { Ray } from "./utils/math";
 import Bullet from "./bullet/bullet";
 import enemies from './enemy_ai/enemies';
@@ -98,17 +98,25 @@ export class Game {
     this.register_updates();
   }
 
-  addAllies(n:number) {
-    for(let i=0; i<n; i++) {
-      let ally = new Tank(0, Vector.create(200,200),this.globals);
-      ally.setCode('');
-      this.add_tank(ally);
+  cloneGlobals():any {
+    let result = {};
+    for(let pair of Object.entries(this.globals)) {
+      result[pair[0]] = pair[1];
     }
+    return result;
+  }
+  
+  addAllies(n:number) {
+  //  for(let i=0; i<n; i++) {
+  //    let ally = new Tank(0, Vector.create(200,200),this.cloneGlobals());
+  //    ally.setCode('');
+  //    this.add_tank(ally);
+  //  }
   }
 
   addEnemies(n:number) {
     for(let i=0; i<n; i++) {
-      let enemy = new Tank(1,Vector.create(200,200),this.globals);
+      let enemy = new Tank(1,Vector.create(200,200),this.cloneGlobals());
       enemy.setCode('');
       this.add_tank(enemy);
     }

@@ -41,8 +41,9 @@ export class Script{
     return window['script_loader'](code)
   }
 
-  constructor(module: JsModule,globals:TankAPI) {
+  constructor(module: JsModule, globals:TankAPI) {
     console.log("Calling setup now..."+module);
+    console.log(`Globals has: ${Object.keys(globals).join(',')}`);
     this.globals = globals;
     this.runner = module.setup(globals);
     this.js_module = module;
@@ -62,18 +63,23 @@ export class Script{
 
   update(js_code:string) {
     let self=this;
-    Script.scriptImport(js_code)
-      .then((module:any) => {
-        console.log("Calling setup now..."+module);
-        self.runner = module.setup(self.globals);
-        self.js_module = module;
-      })
-    .catch((e)=>console.log("Error loading script: "+e));
+    if(js_code.length == 0) {
+      self.js_module = new EmptyModule();
+      self.runner = self.js_module.setup(self.globals);
+    } else {
+      Script.scriptImport(js_code)
+        .then((module:any) => {
+          console.log("Calling setup now..."+module);
+          self.runner = module.setup(self.globals);
+          self.js_module = module;
+        })
+        .catch((e)=>console.log("Error loading script: "+e));
+    }
   }
 
   execute() {
     if(typeof(this.runner) == 'object') {
-      console.log(`updating tank, globals = ${this.globals}`)
+      console.log(`updating tank, globals = ${Object.keys(this.globals).join(', ')}`)
       this.runner.update(this.globals);
     }
   }

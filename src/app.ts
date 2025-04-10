@@ -1,6 +1,6 @@
 
 import {Vector} from "matter-js";
-import Tank from "./tank/tank";
+import {Tank} from "./tank/tank";
 import { Game } from "./game";
 import Editor from "./editor";
 import {fmod, turnAngle, limitAngle, Ray, clamp} from './utils/math';
