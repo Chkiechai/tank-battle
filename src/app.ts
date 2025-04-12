@@ -14,13 +14,14 @@ document.querySelector('#enemy-options')
   game.setEnemyAI(event.target.value);
 });
 
-let game = new Game();
+var game = new Game(editor);
 
 editor.onShipCode((code:string)=>{
   game.reset();
   game.setAllyCode(code);
   game.run();
 });
+editor.shipCode();
 
 document.querySelector('#downloadButton').addEventListener('click', ()=>{
   download(`tank-${editor.contentHash().toString(16)}.ts`, editor.getCode());

@@ -73,6 +73,7 @@ export default class Editor {
             .then((response)=>response.text())
             .then((tank_api)=> sandbox.languageServiceDefaults.addExtraLib(tank_api,"file:///tank-api.d.ts"))
             .then((_)=> sandbox.editor.focus())
+            .then((_)=> self.shipCode())
             .catch((e) => document.querySelector('#output').innerHTML = `Error loading tank API: ${e}`)
             .finally(() => document.querySelector('#output').innerHTML = `Loaded Tank API`)
           ;
@@ -141,6 +142,14 @@ export default class Editor {
       }
     }
     return localStorage.getItem(`com.ginosterous.tank-battle.backup.${backup_id}`);
+  }
+
+  getJsCode():Promise<string> {
+    if(this.sandbox) {
+      return this.sandbox.getRunnableJS()
+    } else {
+      return Promise.reject("No sandbox")
+    }
   }
   
   shipCode() {

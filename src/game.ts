@@ -7,12 +7,23 @@ import enemies from './enemy_ai/enemies';
 import {JsModule} from './tank/script';
 import { Script } from './tank/script';
 import {Globals} from "./globals";
+import Editor from "./editor";
 
 declare function insert_enemies(element:any, names:string[]):void;
 
 /**
   The Game class is in charge of running the arena and coordinating all of the updates.
-  It keeps track of the set of tanks and the score as well.
+  It keeps track of the set of tanks and the score as well. In order to use it:
+  
+  1. Create a div with the id 'game'
+  2. Create the game (`new Game()`)
+  3. Call `game.setEnemyAI(ai_name)` with the name of the enemy control code module 
+     you want to use. It should be structured like the ones in enemy_ai/tank_*.ts
+  4. Call `game.setAllyCode(code)` with the user's code, if it exists. If not, the ally
+     tanks will start with a null module.
+  5. Set an event to call `game.reset(); game.setAllyCode(new_code_string); game.run()`
+     whenever the user's code needs to be updated.
+  6. Call `game.run()`
 **/
 
 export class Game {
@@ -26,6 +37,7 @@ export class Game {
   paused:boolean
   enemy_ai_modules: {[key:string]:JsModule}
   enemy_ai: JsModule
+  editor: Editor
   
   // The target frames per second for the physics simulation
   static SimFPS = 60;
@@ -57,7 +69,7 @@ export class Game {
     "wall.bottom": new Ray(Vector.create(Game.bounds.width/2,Game.bounds.height), Vector.create(-1,0)),
   }
 
-  constructor() {
+  constructor(editor:Editor) {
     this.engine = Engine.create();
     this.enemy_ai_modules = enemies;
     this.engine.gravity.scale = 0;
@@ -66,7 +78,8 @@ export class Game {
     this.last_update=-1;
     this.output = [];
     this.bullets = {};
-    this.paused = false;
+    this.paused = true;
+    this.editor = editor;
     // create a renderer
     this.render = Render.create({
       element: document.querySelector('#game'),
@@ -78,40 +91,75 @@ export class Game {
         wireframes: false,
       }
     });
+    // This comes from index.html, and all it does is populate the enemy AI selector
+    // box so that the user can choose among the AI modules.
     insert_enemies(document.querySelector("#enemy-options"), Object.keys(this.enemy_ai_modules));
     this.enemy_ai = Object.values(this.enemy_ai_modules)[0];
     if(!this.render) {
       throw new Error("Couldn't build a renderer!");
     }
+    // quick helper to make the options for each wall
+    let wall_props = (side:string) => {
+      return {
+        isStatic:true,
+        label:`wall.${side}`,
+        restitution:1,
+        render: {
+          fillStyle: '#555',
+        },
+        collisionFilter: {
+          category: Game.WallCollisionfilter,
+          group: -1,
+          mask: ~Game.WallCollisionfilter,
+        }
+      }
+    };
     let walls = [
-      Bodies.rectangle(0,Game.bounds.height/2,10,Game.bounds.height,{isStatic:true,label:"wall.left",restitution:1}),
-      Bodies.rectangle(Game.bounds.width/2,0,Game.bounds.width, 10,{isStatic:true,label:"wall.top",restitution:1}),
-      Bodies.rectangle(Game.bounds.width/2,Game.bounds.height, Game.bounds.width, 10,{isStatic:true,label:"wall.bottom",restitution:1}),
-      Bodies.rectangle(Game.bounds.width, Game.bounds.height/2, 10,Game.bounds.height,{isStatic:true,label:"wall.right",restitution:1}),
+      Bodies.rectangle(0,Game.bounds.height/2,10,Game.bounds.height,wall_props("left")),
+      Bodies.rectangle(Game.bounds.width/2,0,Game.bounds.width, 10,wall_props("top")),
+      Bodies.rectangle(Game.bounds.width/2,Game.bounds.height, Game.bounds.width, 10,wall_props("bottom")),
+      Bodies.rectangle(Game.bounds.width, Game.bounds.height/2, 10,Game.bounds.height,wall_props("right")),
     ];
-    for(let wall of walls) {
-      wall.collisionFilter.category = Game.WallCollisionfilter;
-      wall.collisionFilter.group = -1;
-      wall.collisionFilter.mask = ~Game.WallCollisionfilter;
-    }
     Composite.add(this.engine.world,walls);
 
     this.register_updates();
   }
 
-  addAllies(n:number) {
-    for(let i=0; i<n; i++) {
-      let ally = new Tank(0, Vector.create(200,200),new Globals().withGame(this),this);
+  /** addAllies
+  * Sets the number of allied tanks to be included in the battle. Each tank
+  * will get a copy of the current code and a blue color. The Allied tanks are always 
+  * team_id 0 while running in the browser, to make it simple to know which tanks to 
+  * update when the editor's content get shipped.
+  * */
+  addAllies(n: number) {
+    let code = this.editor.loadSaved();
+    for (let i = 0; i < n; i++) {
+      let ally = new Tank(0, Vector.create(200, 200), new Globals().withGame(this), this);
+      // Tanks will have an empty code module by default, no need to set it here unless
+      // I actually have code to insert.
       ally.setStyle({
-          fillStyle:'#333399',
-          lineWidth: 0,
-          opacity: 1,
-        })
-      ally.setCode('');
-      this.add_tank(ally);
+        fillStyle: '#333399',
+        lineWidth: 0,
+        opacity: 1,
+      })
+     this.add_tank(ally);
     }
+    let self=this;
+    this.editor.getJsCode()
+      .then((code:string)=>{
+        for(let ally of Object.values(self.tanks).filter((t)=>t.team_id == 0)) {
+          ally.setCode(code)
+        }
+      })
+      .catch((e)=>{
+        this.println(`ERROR: Code could not be loaded: ${e}`);
+      });
   }
 
+  /** addEnemies
+  *   Add the selected number of enemies to the arena. Each enemy will start with 
+  *   the currently-selected enemy AI module.
+  * */
   addEnemies(n:number) {
     for(let i=0; i<n; i++) {
       let enemy = new Tank(1,Vector.create(200,200),new Globals().withGame(this),this);
@@ -120,11 +168,23 @@ export class Game {
         lineWidth: 0,
         opacity: 1,
       });
-      enemy.setCode('');
+      enemy.setModule(
+        new Script(this.enemy_ai, 
+          new Globals()
+            .withGame(this)
+            .withTank(enemy)));
       this.add_tank(enemy);
     }
   }
-  
+
+  /** setAllyCode
+  *   Set the allied tanks' code to be the string provided. It is assumed to be a JS module
+  *   with a single export named `setup`, which does nothing other than return an instance
+  *   of a class that has a function called `update(dt:number,api:Globals)`. This module 
+  *   will be reused between several tanks, so it can't use global data anywhwere! If you use
+  *   global data, your tanks will all be sharing and updating the *same variables*, so their
+  *   behavior will be very strange.
+  * */
   setAllyCode(code:string) {
     for(let tank of Object.values(this.tanks)) {
       if(tank.team_id == 0) { // allied team_id is always zero for now
@@ -132,7 +192,13 @@ export class Game {
       }
     }
   }
-  
+
+  /** setEnemyAI
+  *   This takes the *name* of an enemy AI module (see `enemy_ai/enemies.ts`). It will
+  *   make the enemy tanks in the arena use that AI module. The module has the same rules
+  *   as for `setAllyCode`, meaning that it has a `setup` function and it can't use global
+  *   data.
+  **/
   setEnemyAI(ai_name: string) {
     console.log(`Setting the AI to ${ai_name}`);
     this.enemy_ai = this.enemy_ai_modules[ai_name];
@@ -144,6 +210,10 @@ export class Game {
     this.reset();
   }
 
+  /** Return the tank that has the given id number. The id comes from matter-js and its
+  * Body.id property. This is used for figuring out which tanks are involved with collisions
+  * between tanks and other objects in the scene.
+  **/
   getTankById(id:number):Tank|null {
     if(id in this.tanks) {
       return this.tanks[id];
@@ -153,15 +223,25 @@ export class Game {
     }
   }
   
+  /** Return the matter-js Composite that contains all of the game bodies.
+  **/
   world():Composite {
     return this.engine.world;
   }
 
+  /** Every time a tank shoots, its bullet has to be registered with the world and
+  * tracked by the game. This is where that happens. Note that each tank also keeps
+  * its bullets in a list so that they can be deleted if the tank is reset.
+  **/
   add_bullet(bullet:Bullet) {
     this.bullets[bullet.body.id] = bullet;
     Composite.add(this.engine.world,bullet.body);
   }
 
+  /** Reset the game in preparation to restart
+  *   This will call Tank.reset for all tanks (enemy and ally) and remove all bullets.
+  *   If there aren't any tanks yet, it will also add them.
+  **/
   reset() {
     for(let tank of Object.values(this.tanks)) {
         tank.reset(this.engine);
@@ -177,7 +257,19 @@ export class Game {
     }
   }
 
-  // Connect the physics engine updates to the game state so the tanks get updated.
+  /** Connect the physics engine updates to the game state so the tanks get updated. This
+   * is the function that listens for all of the collisions and takes action as needed. It
+   * also runs the update loop for the physics entities.
+   *
+   * - on `beforeupdate`, it calls update on all tanks and bullets
+   *    - any bullets that have collided (are 'dead') will be removed
+   * - on `collisionActive`, it updates the radar values. Radar is the only game 
+   *   entity that can have an active collision that does anything right now. Tanks
+   *   will eventually be damaged while in a collision, but not yet.
+   * - on `collisionStart`, it applies damage and marks things as dead:
+   *    - bullets die the moment they collide with anything (including other bullets)
+   *    - tanks die when their hit_points value reaches zero
+  **/
   register_updates() {
     // Update the controls before the step starts
     Events.on(this.engine, 'beforeUpdate', (event)=> {
@@ -196,6 +288,7 @@ export class Game {
       for(let tank of Object.values(this.tanks)) {
         tank.update(engine.timing.lastDelta/1000.0,this);
       }
+      this.updateOutput();
     });
 
     // radar is the only thing that needs *active* events for now, to continue detecting
@@ -247,6 +340,10 @@ export class Game {
     })
   }
 
+  /** Update the output window of the game to display all of the messages from
+   * calls to api.println. This is called from the `beforeUpdate` handler inside of
+   * Game.register_updates
+  * */
   updateOutput() {
     let tank_poses = Object.values(this.tanks).map((t) => t.show());
     //let out = `<pre>${tank_poses.join('\n')}\nBullets: ${Object.keys(this.bullets).length}\n${this.output.join('\n')}</pre>`;
@@ -330,6 +427,5 @@ export class Game {
       this.animation_id = requestAnimationFrame(()=>this.update());
     }
     Render.world(this.render);
-    this.updateOutput();
   }
 }
