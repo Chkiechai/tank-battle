@@ -9,12 +9,6 @@ export declare class Ray {
   intersect(other:Ray):Vector|null 
 }
 
-export declare function fmod(a:number, b:number) : number 
-export declare function turnAngle(from_angle: number, to_angle: number):number 
-export declare function limitAngle(angle:number):number 
-export declare function clamp(value:number, min:number, max:number) : number 
-export declare function angleRelativeTo(my_angle:number, relative_to:number):number 
-
 export interface Controls {
   turn_gun: number,
   turn_radar: number,
@@ -61,6 +55,14 @@ export interface Game{
 }
 
 export declare class Globals {
+  public static readonly MaxTrackSpeed = 200
+  public static readonly MaxTurnSpeed = 3.1415926536
+  public static readonly MaxRadarTurn = 6.2831853072
+  public static readonly RadarRange = 300
+  public static readonly MaxGunTurn = 3.1415926536
+  public static readonly MaxShotEnergy = 1.0
+  public static readonly GunRechargeRate = 0.01
+
   constructor() 
   withTank(tank:Tank):Globals 
   withGame(game:Game):Globals 
@@ -78,7 +80,7 @@ export declare class Globals {
   fmod(num:number, modulus: number):number 
   Ray: Ray
   Vector:Vector
- }
+}
 
 
 
