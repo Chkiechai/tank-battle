@@ -56,7 +56,8 @@ export class Tank{
   //static MaxRadarSpeed:number = 2*Math.PI
   //static RadarRange:number = 200
   //static MaxGunSpeed:number = Math.PI/2
-  static DefaultControls:Controls = {
+  static DefaultControls():Controls {
+    return {
       turn_gun: 0,
       turn_radar: 0,
       left_track_speed: 0,
@@ -64,6 +65,7 @@ export class Tank{
       fire_gun: 0,
       show_radar: true,
     };
+  }
 
   static DefaultCode = `
 import {Globals,Controls,Sensors,RadarHit,RadarData} from './tank-api';
@@ -204,7 +206,7 @@ export function loop(api:Globals) {
     this.dead = false;
     this.energy = Tank.MaxEnergy;
     this.hit_points = Tank.MaxHitPoints;
-    this.controls = Tank.DefaultControls;
+    this.controls = Tank.DefaultControls();
     this.bullets = [];
     this.radar.reset();
     this.turret.reset();
