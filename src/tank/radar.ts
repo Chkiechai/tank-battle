@@ -2,7 +2,7 @@ import { Bodies, Body, Pair, Vector } from "matter-js"
 import {Game} from "../game";
 import {Tank} from "./tank";
 import { clamp,limitAngle, Ray } from "../utils/math";
-import {RadarData,RadarHit} from '../globals';
+import {Globals, RadarData,RadarHit} from '../globals';
 
 
 export class Radar {
@@ -15,8 +15,9 @@ export class Radar {
   hits: RadarData
   game: Game // for looking up tanks by id
   
-  static MaxTurnSpeed: number = 2*Math.PI // fastest allowed turning speed
-  static Range: number = 300
+  static MaxTurnSpeed: number = Globals.MaxRadarTurn // fastest allowed turning speed
+  static Range: number = Globals.RadarRange
+  
   static EmptyHits():RadarData  {
     return {
       wall:-1,
@@ -34,7 +35,7 @@ export class Radar {
     this.team_id = tank.team_id;
     this.tank_id = tank.id();
     this.game = game;
-    console.log(`Radar setup: tank_id = ${this.tank_id}, team_id = ${this.team_id}`);
+    //console.log(`Radar setup: tank_id = ${this.tank_id}, team_id = ${this.team_id}`);
     this.setup_shape(tank.body.position);
   }
 
@@ -148,9 +149,9 @@ export class Radar {
           if(body.id != this.tank_id) {
             //this.set_visible(true);
             let other_tank = this.game.getTankById(body.id);
-            console.log(`Radar hit: tank ${this.tank_id}(team ${this.team_id}) detected ${body.id}(team ${other_tank.team_id}) energy=${other_tank.hit_points}`);
+            //console.log(`Radar hit: tank ${this.tank_id}(team ${this.team_id}) detected ${body.id}(team ${other_tank.team_id}) energy=${other_tank.hit_points}`);
             if(!other_tank) {
-              console.log("WARNING: Radar Hit returning zero energy, need to figure out how to look up tank from body");
+              //console.log("WARNING: Radar Hit returning zero energy, need to figure out how to look up tank from body");
             }
             let res:RadarHit = {
               distance:Vector.magnitude(Vector.sub(body.position,this.collision_shape.position)),

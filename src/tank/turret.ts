@@ -5,6 +5,7 @@ import {RenderStyle, Tank} from "./tank";
 import {clamp,limitAngle } from "../utils/math";
 import Bullet from "src/bullet/bullet";
 import { Game } from "src/game";
+import { Globals } from "src/globals";
 
 export class Turret {
   turn_speed: number // speed of rotation
@@ -13,10 +14,10 @@ export class Turret {
   angle: number
   energy: number // when this is 1, I can shoot
 
-  static MaxEnergy:number = 1;
-  static EnergyRecovery: number = 0.01;
+  static MaxEnergy:number = Globals.MaxShotEnergy;
+  static EnergyRecovery: number = Globals.GunRechargeRate;
   static BarrelLength:number = 18;
-  static MaxTurnSpeed: number = Math.PI // fastest allowed turning speed
+  static MaxTurnSpeed: number = Globals.MaxGunTurn // fastest allowed turning speed
   static MinimumShotEnergy: number = 0.1;
   constructor(tank: Tank) {
     this.energy = Turret.MaxEnergy;

@@ -7,7 +7,7 @@ import { Game } from '../game';
 import {Radar} from './radar';
 import { Turret } from './turret';
 import Bullet from 'src/bullet/bullet';
-import {Globals,Controls,Sensors,RadarData} from '../globals';
+import {Globals,Controls,Sensors} from '../globals';
 
 // Questions:
 //   - How do I make this thing have collision detection? - use Body isSensor
@@ -47,12 +47,12 @@ export class Tank{
   bullets:Bullet[]
 
   static MinTurnAngle: number=0.00001
-  static MaxAngularVelocity: number=Math.PI
+  static MaxAngularVelocity: number=Globals.MaxTurnSpeed
   static Width:number = 20
   static Length:number = 25
   static MaxHitPoints:number = 1
   static MaxEnergy:number= 1000
-  static MaxSpeed:number = 200
+  static MaxSpeed:number = Globals.MaxTrackSpeed
   //static MaxRadarSpeed:number = 2*Math.PI
   //static RadarRange:number = 200
   //static MaxGunSpeed:number = Math.PI/2
