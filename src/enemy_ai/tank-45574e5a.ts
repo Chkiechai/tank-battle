@@ -36,27 +36,27 @@ class Tank {
     let enemies = sensors.radar_hits.enemies
       .filter((e)=>e.energy > 0)
       .sort((a,b)=>a.distance-b.distance);
-    api.println(`Radar hits: ${sensors.radar_hits.enemies.length} ${sensors.radar_hits.allies.length}`);
+    //api.println(`Radar hits: ${sensors.radar_hits.enemies.length} ${sensors.radar_hits.allies.length}`);
     if(sensors.radar_hits.enemies.length > 0){
-      api.println("energy/dist: ", sensors.radar_hits.enemies.map((e)=>`${e.energy}/${e.distance}`).join(', '));
+      //api.println("energy/dist: ", sensors.radar_hits.enemies.map((e)=>`${e.energy}/${e.distance}`).join(', '));
     }
-    api.println(`Enemy hits: ${enemies.length}`);
+    //api.println(`Enemy hits: ${enemies.length}`);
     if (enemies.length>0) {
       let enemy = enemies[0];
       let aim_turn = api.turnAngle(sensors.radar_angle+sensors.direction, enemy.angle);
       let radar_speed = aim_turn/api.getDeltaT();
       controls.turn_radar = api.clamp(radar_speed,-2*Math.PI,2*Math.PI);
-      api.println(
-        "(enemy) radar angle: ",
-        sensors.radar_angle, 
-        " enemy angle: ",
-        enemy.angle,
-        ", adjust: ",
-        aim_turn
-      );
+      //api.println(
+      //  "(enemy) radar angle: ",
+      //  sensors.radar_angle, 
+      //  " enemy angle: ",
+      //  enemy.angle,
+      //  ", adjust: ",
+      //  aim_turn
+      //);
 
       if (Math.abs(aim_error) <= 0.05) {
-        api.println("(enemy) shoot angle ", sensors.gun_angle)
+        //api.println("(enemy) shoot angle ", sensors.gun_angle)
         controls.fire_gun = 0.3;
       } else {
         controls.fire_gun = 0;
@@ -72,7 +72,7 @@ class Tank {
     this.dt = api.getDeltaT();
     this.time += this.dt;
     let controls: Controls = this.robot.update(this.dt, api, this);
-    api.println(`4557 id=${this.id}`);
+    //api.println(`4557 id=${this.id}`);
     api.setControls(controls);
   }
 }
@@ -178,8 +178,8 @@ class Turn extends State {
     let trackSpeed = (this.half_wheel_base * (this.target_angle - sensors.direction)) / dt;
     let threshold = 0.1;
     this.target_angle = this.target_angle - Math.sign(this.target_angle) * Math.floor(Math.abs(this.target_angle)/(2*Math.PI)) * 2 * Math.PI
-    api.println("(enemy) direction: " + sensors.direction)
-    api.println("(enemy) target_angle :" + this.target_angle)
+    //api.println("(enemy) direction: " + sensors.direction)
+    //api.println("(enemy) target_angle :" + this.target_angle)
     if (Math.abs(trackSpeed) > this.max_speed) {
       trackSpeed = Math.sign(trackSpeed) * this.max_speed;
     }
@@ -188,7 +188,7 @@ class Turn extends State {
     if (Math.abs(this.target_angle - sensors.direction) < threshold) {
       controls.right_track_speed = 0;
       controls.left_track_speed = 0;
-      api.println("(enemy) direction: " + sensors.direction)
+      //api.println("(enemy) direction: " + sensors.direction)
 
       return "forward";
     } else {

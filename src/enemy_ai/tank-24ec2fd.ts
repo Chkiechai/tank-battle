@@ -45,24 +45,24 @@ class Tank {
     let sensors = api.getSensors();
     controls.fire_gun = 0.5;
     //api.pause();
-    api.println("Radar angle: ", sensors.radar_angle);
+    //api.println("Radar angle: ", sensors.radar_angle);
     this.time += api.getDeltaT();
-    api.println(`24ec Id = ${this.id}`);
-    api.println("Time = ", this.time);
-    api.println("delta_t = ", api.getDeltaT());
+    //api.println(`24ec Id = ${this.id}`);
+    //api.println("Time = ", this.time);
+    //api.println("delta_t = ", api.getDeltaT());
     controls.turn_radar = 0.9;
     controls.turn_gun = Math.PI;
     //controls.turn_radar = 0.5 * Math.PI;
     //controls.turn_gun = Math.PI/2-sensors.gun_angle;
     controls.show_radar = true;
-    api.println("enemies: ", sensors.radar_hits.enemies.length);
+    //api.println("enemies: ", sensors.radar_hits.enemies.length);
     if(sensors.radar_hits.bullets.length > 0) {
       controls.turn_radar = 0;
       let num_bullets = sensors.radar_hits.bullets.length;
       let first_bullet = sensors.radar_hits.bullets[0];
-      api.println!(`Radar: ${num_bullets} bullets, first is at `, first_bullet.distance);
+      //api.println!(`Radar: ${num_bullets} bullets, first is at `, first_bullet.distance);
     } else {
-      api.println!(`Radar: 0 bullets`);
+      //api.println!(`Radar: 0 bullets`);
     }
     // if (Math.abs(sensors.radar_angle + Math.PI / 2) < 0.01) {
     //   api.println("wall distance: ", sensors.radar_hits.wall);
@@ -74,7 +74,7 @@ class Tank {
 
     if (this.step >= this.steps.length) {
       this.reset();
-      api.println("Paused, press resume to run again");
+      //api.println("Paused, press resume to run again");
       //api.pause();
     } else if (this.steps[this.step](api)) {
       this.step++;
@@ -107,19 +107,19 @@ class Tank {
     let max_turn_speed = Tank.max_speed / (Tank.wheel_base / 2);
     return (api: Globals) => {
       let delta_ang = this.ccw_turn(target_angle, api.getSensors().direction);
-      api.println("ccw turn is ", delta_ang);
+      //api.println("ccw turn is ", delta_ang);
       if (Math.abs(delta_ang) > Math.PI) {
         delta_ang = this.cw_turn(target_angle, api.getSensors().direction);
-        api.println("cw turn is ", delta_ang);
+        //api.println("cw turn is ", delta_ang);
       }
       let turn_speed = delta_ang / api.getDeltaT();
-      api.println("delta angle: ", delta_ang);
-      api.println("Total turn would be ", turn_speed);
+      //api.println("delta angle: ", delta_ang);
+      //api.println("Total turn would be ", turn_speed);
       if (Math.abs(turn_speed) > max_turn_speed) {
         turn_speed = Math.sign(turn_speed) * max_turn_speed;
-        api.println("Adjusted turn speed: ", turn_speed);
+        //api.println("Adjusted turn speed: ", turn_speed);
       }
-      api.println("turn_speed (rad/sec): ", turn_speed);
+      //api.println("turn_speed (rad/sec): ", turn_speed);
       ///api.pause();
       let controls = api.getControls();
       if (Math.abs(delta_ang) < 0.01) {
@@ -146,15 +146,15 @@ class Tank {
       let speed = (distance - moved_already) / api.getDeltaT();
       if (speed > Tank.max_speed) {
         speed = Tank.max_speed;
-        api.println(`speed limit: ${speed}`)
+        //api.println(`speed limit: ${speed}`)
       }
 
       moved_already += speed * api.getDeltaT();
       controls.left_track_speed = speed;
       controls.right_track_speed = speed;
-      api.println("dist: ", distance);
-      api.println("moved: ", moved_already);
-      api.println("remaining: ", distance - moved_already);
+      //api.println("dist: ", distance);
+      //api.println("moved: ", moved_already);
+      //api.println("remaining: ", distance - moved_already);
       return false;
     }
   }

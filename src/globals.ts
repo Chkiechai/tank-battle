@@ -2,6 +2,8 @@ import {Tank} from './tank/tank';
 import {Game} from './game';
 import {Vector} from 'matter-js';
 import { Ray, turnAngle,limitAngle,clamp,fmod } from './utils/math';
+import { Radar } from './tank/radar';
+import { Turret } from './tank/turret';
 
 export interface Controls {
   turn_gun: number,
@@ -38,6 +40,14 @@ export interface Sensors  {
 
 
 export class Globals {
+  static MaxTrackSpeed:number = Tank.MaxSpeed
+  static MaxTurnSpeed:number = Tank.MaxAngularVelocity
+  static MaxRadarTurn:number = Radar.MaxTurnSpeed
+  static RadarRange:number = Radar.Range
+  static MaxGunTurn:number = Turret.MaxTurnSpeed
+  static MaxShotEnergy:number = Turret.MaxEnergy
+  static GunRechargeRate:number = Turret.EnergyRecovery
+  
   constructor() {
     this.game = undefined;
     this.tank = undefined;

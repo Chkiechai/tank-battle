@@ -239,7 +239,7 @@ export function loop(api:Globals) {
       }
       this.controls.fire_gun = 0;
     }
-    let limited = Math.max(this.left_speed,this.right_speed);
+    let limited = Math.max(Math.abs(this.left_speed),Math.abs(this.right_speed));
     if(limited > Tank.MaxSpeed) {
       console.log(`WARNING: limiting tank speed to ${Tank.MaxSpeed}, requested speed was ${limited}`);
       this.left_speed *= Tank.MaxSpeed/limited;
