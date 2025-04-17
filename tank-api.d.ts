@@ -54,7 +54,7 @@ export interface Game{
   resume():void
 }
 
-export declare class Globals {
+export class Constants {
   public static readonly MaxTrackSpeed = 200
   public static readonly MaxTurnSpeed = 3.1415926536
   public static readonly MaxRadarTurn = 6.2831853072
@@ -62,8 +62,10 @@ export declare class Globals {
   public static readonly MaxGunTurn = 3.1415926536
   public static readonly MaxShotEnergy = 1.0
   public static readonly GunRechargeRate = 0.01
+  public static readonly TankWheelBase = 20
+}
 
-  constructor() 
+export interface Globals {
   withTank(tank:Tank):Globals 
   withGame(game:Game):Globals 
   check():boolean 
