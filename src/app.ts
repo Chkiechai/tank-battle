@@ -21,9 +21,10 @@ editor.onShipCode((code:string)=>{
   game.setAllyCode(code);
   game.run();
 });
-editor.shipCode();
+//editor.shipCode();
 
 document.querySelector('#downloadButton').addEventListener('click', ()=>{
+  console.log("Downloading code...");
   download(`tank-${editor.contentHash().toString(16)}.ts`, editor.getCode());
 });
 

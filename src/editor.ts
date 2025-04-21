@@ -75,7 +75,9 @@ export default class Editor {
             .then((_)=> sandbox.editor.focus())
             .then((_)=> self.shipCode())
             .catch((e) => document.querySelector('#output').innerHTML = `Error loading tank API: ${e}`)
-            .finally(() => document.querySelector('#output').innerHTML = `Loaded Tank API`)
+            .finally(() => {
+              document.querySelector('#output').innerHTML = `Loaded Tank API`;
+            })
           ;
         })
     }

@@ -138,7 +138,7 @@ export class Game {
       // Tanks will have an empty code module by default, no need to set it here unless
       // I actually have code to insert.
       ally.setStyle({
-        fillStyle: '#333399',
+        fillStyle: '#8888ff',
         lineWidth: 0,
         opacity: 1,
       })
@@ -252,8 +252,8 @@ export class Game {
     this.bullets = [];
      // add some tanks if there aren't any
     if(Object.keys(this.tanks).length == 0) {
-      this.addAllies(3);
-      this.addEnemies(3);
+      this.addAllies(4);
+      this.addEnemies(4);
     }
   }
 

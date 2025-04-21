@@ -1,8 +1,10 @@
 
-import setup1 from './tank-24ec2fd';
-import setup2 from './tank-45574e5a';
+import setup1 from './chaser';
+import setup2 from './rando';
+import setup3 from './square-drive-killer';
 
 export default {
-  "tank-24ec2fd": {"setup":setup1},
-  "tank-45574e5a": {"setup":setup2},
+  "chaser": {"setup":setup1},
+  "rando": {"setup":setup2},
+  "square-drive-killer": {"setup":setup3},
 }
