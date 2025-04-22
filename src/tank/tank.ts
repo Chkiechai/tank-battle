@@ -6,7 +6,7 @@ import {Script, EmptyModule } from './script';
 import { Game } from '../game';
 import {Radar} from './radar';
 import { Turret } from './turret';
-import Bullet from 'src/bullet/bullet';
+import Bullet from '../bullet/bullet';
 import {Globals,Controls,Sensors} from '../globals';
 
 // Questions:
@@ -52,6 +52,7 @@ export class Tank{
   static Length:number = 25
   static MaxHitPoints:number = 1
   static MaxEnergy:number= 1000
+  static RechargeRate: number = Tank.MaxEnergy/(3 * Game.SimFPS);
   static MaxSpeed:number = Globals.MaxTrackSpeed
   //static MaxRadarSpeed:number = 2*Math.PI
   //static RadarRange:number = 200
@@ -64,6 +65,7 @@ export class Tank{
       right_track_speed: 0,
       fire_gun: 0,
       show_radar: true,
+      boost : 0
     };
   }
 
@@ -119,14 +121,7 @@ export function loop(api:Globals) {
       globals.withTank(this),
     );
 
-    this.controls = {
-      turn_gun: 0,
-      turn_radar: 0,
-      left_track_speed: 0,
-      right_track_speed: 0,
-      fire_gun: 0,
-      show_radar: true,
-    };
+    this.controls = Tank.DefaultControls();
   }
 
   setStyle(style:RenderStyle) {
@@ -134,7 +129,7 @@ export function loop(api:Globals) {
       this.body.render[key] = style[key];
     }
   }
-  
+
   // A unique identifier number for each tank
   id():number {
     return this.body.id;
@@ -225,6 +220,8 @@ export function loop(api:Globals) {
       this.control(delta_t);
     }
 
+    this.energy = Math.min(this.energy+Tank.RechargeRate, Tank.MaxEnergy);
+
     if(this.update_handler) {
       this.update_handler(this);
     }
@@ -234,6 +231,7 @@ export function loop(api:Globals) {
 
     this.left_speed = this.controls.left_track_speed;
     this.right_speed = this.controls.right_track_speed;
+
     if(this.controls.fire_gun>0) {
       let bullet = this.turret.fire(this.controls.fire_gun, this.body.velocity,this.body.render);
       if(bullet) {
@@ -241,23 +239,35 @@ export function loop(api:Globals) {
       }
       this.controls.fire_gun = 0;
     }
-    let limited = Math.max(Math.abs(this.left_speed),Math.abs(this.right_speed));
+    if(this.energy < this.controls.boost*Tank.MaxEnergy*delta_t) {
+      this.controls.boost = 0;
+    }
+     let limited = Math.max(Math.abs(this.left_speed),Math.abs(this.right_speed));
     if(limited > Tank.MaxSpeed) {
       console.log(`WARNING: limiting tank speed to ${Tank.MaxSpeed}, requested speed was ${limited}`);
       this.left_speed *= Tank.MaxSpeed/limited;
       this.right_speed *= Tank.MaxSpeed/limited;
     }
+
+    this.left_speed += Tank.MaxSpeed * this.controls.boost;
+    this.right_speed += Tank.MaxSpeed * this.controls.boost;
+
     if(!this.dead) {
       let delta_angle = (this.left_speed - this.right_speed)*delta_t / this.wheel_base;
-      if(Math.abs(delta_angle*Game.SimFPS) > Tank.MaxAngularVelocity) {
-        delta_angle = Math.sign(delta_angle) * Tank.MaxAngularVelocity/Game.SimFPS;
+      let max_turn_speed = Tank.MaxAngularVelocity * (this.controls.boost+1)
+      // TODO: Fix this so that it respects the turn radius. Compute the radius, then
+      // compute the max speed at which that radius can be achieved without turning to fast.
+      if(Math.abs(delta_angle*Game.SimFPS) > max_turn_speed) {
+        delta_angle = Math.sign(delta_angle) * max_turn_speed/Game.SimFPS;
         this.left_speed *= Tank.MaxAngularVelocity/(delta_angle*Game.SimFPS);
         this.right_speed *= Tank.MaxAngularVelocity/(delta_angle*Game.SimFPS);
       }
+
       let angle = this.body.angle;
       let velocity = Vector.mult(Vector.create(Math.cos(angle), Math.sin(angle)), (this.left_speed+this.right_speed)/2);
       Body.setAngularVelocity(this.body, delta_angle);
       Body.setVelocity(this.body, Vector.mult(velocity,1/Game.SimFPS));
+      this.energy -= this.controls.boost*Tank.MaxEnergy*delta_t;
     }
   }
 
@@ -280,7 +290,7 @@ export function loop(api:Globals) {
   setModule(script:Script) {
     this.code = script;
   }
-  
+
   getSensors() : Sensors {
     return {
       radar_hits: this.radar.get_hits(),

@@ -10,6 +10,7 @@ export interface Controls {
   right_track_speed: number,
   fire_gun: number,
   show_radar: boolean,
+  boost: number
 }
 
 export interface RadarData  {
@@ -55,7 +56,7 @@ export class Globals {
   static MaxGunTurn:number = Math.PI
   static MaxShotEnergy:number = 1.0
   static GunRechargeRate:number = 0.01
-  
+
   constructor() {
     this.game = undefined;
     this.tank = undefined;
@@ -122,4 +123,3 @@ export class Globals {
   private game: Game|undefined
   private tank: Tank|undefined
  }
-

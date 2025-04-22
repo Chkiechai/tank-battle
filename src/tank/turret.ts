@@ -3,9 +3,9 @@
 import { Bodies, Body, Vector } from "matter-js"
 import {RenderStyle, Tank} from "./tank";
 import {clamp,limitAngle } from "../utils/math";
-import Bullet from "src/bullet/bullet";
-import { Game } from "src/game";
-import { Globals } from "src/globals";
+import Bullet from "../bullet/bullet";
+import { Game } from "../game";
+import { Globals } from "../globals";
 
 export class Turret {
   turn_speed: number // speed of rotation
