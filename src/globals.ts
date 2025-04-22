@@ -49,6 +49,7 @@ export interface Game{
 }
 
 export class Globals {
+  static SimFPS = 60;
   static MaxTrackSpeed:number = 200
   static MaxTurnSpeed:number = Math.PI
   static MaxRadarTurn:number = Math.PI*2
@@ -56,6 +57,8 @@ export class Globals {
   static MaxGunTurn:number = Math.PI
   static MaxShotEnergy:number = 1.0
   static GunRechargeRate:number = 0.01
+  static MaxBoostEnergy:number = 1000
+  static BoostRechargeRate:number = Globals.MaxBoostEnergy/(Globals.SimFPS*3)
 
   constructor() {
     this.game = undefined;

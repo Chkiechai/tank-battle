@@ -51,8 +51,8 @@ export class Tank{
   static Width:number = 20
   static Length:number = 25
   static MaxHitPoints:number = 1
-  static MaxEnergy:number= 1000
-  static RechargeRate: number = Tank.MaxEnergy/(3 * Game.SimFPS);
+  static MaxEnergy:number= Globals.MaxBoostEnergy;
+  static RechargeRate: number = Tank.MaxEnergy/(3 * Globals.SimFPS);
   static MaxSpeed:number = Globals.MaxTrackSpeed
   //static MaxRadarSpeed:number = 2*Math.PI
   //static RadarRange:number = 200

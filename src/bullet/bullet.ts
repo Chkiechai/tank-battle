@@ -1,13 +1,14 @@
-import { Bodies, Body, Composite, Engine, Vector } from "matter-js";
+import { Bodies, Body, Composite, Vector } from "matter-js";
 import { Game } from "../game";
-import {RenderStyle, Tank} from "../tank/tank";
+import {RenderStyle} from "../tank/tank";
+import {Globals} from "../globals";
 
 export default class Bullet {
   body: Body;
   energy: number; // range = 0..1
   dead: boolean;
 
-  static Speed:number = Tank.MaxSpeed * 3;
+  public static readonly Speed:number = Globals.MaxTrackSpeed * 3;
   
   constructor(position:Vector, velocity:Vector, energy:number, style:RenderStyle) {
     this.body = Bodies.circle(position.x,position.y,3);
