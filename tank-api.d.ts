@@ -16,6 +16,7 @@ export interface Controls {
   right_track_speed: number,
   fire_gun: number,
   show_radar: boolean,
+  boost: number,
 }
 
 export interface RadarData  {

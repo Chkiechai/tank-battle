@@ -93,8 +93,17 @@ class Tank {
     this.trackRadar();
     if(this.radar_lock) {
       let delta_angle = this.radarAngleChange();
-      this.turnAtSpeed(5*delta_angle);
+      this.controls.boost = 1;
+      let drive_dir_error = this.sensors.radar_angle;
+      if(Math.abs(drive_dir_error)>Math.PI/4){
+        // need to turn quickly to close the gap
+        this.turnAtSpeed(drive_dir_error*10);
+        api.println(`turn fast: ${drive_dir_error}`);
+      } else {
+        this.turnAtSpeed(5*delta_angle);
+      }
     }else {
+      this.controls.boost = 0;
       this.turnAtSpeed(1);
       this.aimAt({angle:this.sensors.direction,distance:0,energy:0});
     }
@@ -119,7 +128,7 @@ class Tank {
   murder() {
     if(this.radar_target){
       if(this.aimAt(this.radar_target)){
-        this.controls.fire_gun =0.2;
+        this.controls.fire_gun =0.4;
       };
     }
   }
