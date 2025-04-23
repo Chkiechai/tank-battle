@@ -9,10 +9,26 @@ editor.setup();
 document.querySelector('#pauseButton').addEventListener('click', ()=>game.pause());
 document.querySelector('#stepButton').addEventListener('click', ()=>game.step());
 document.querySelector('#resumeButton').addEventListener('click', ()=>game.resume());
+
 document.querySelector('#enemy-options')
   .addEventListener("change", (event:any)=>{
   game.setEnemyAI(event.target.value);
 });
+
+document.querySelector('#enemy-count')
+  .addEventListener("change", (event:any) => {
+    console.log(event.target.value);
+    let n:number = parseInt(event.target.value);
+    game.setEnemyCount(n);
+});
+
+document.querySelector('#ally-count')
+  .addEventListener("change", (event:any) => {
+    console.log(event.target.value);
+    let n:number = parseInt(event.target.value);
+    game.setAllyCount(n);
+});
+
 
 var game = new Game(editor);
 

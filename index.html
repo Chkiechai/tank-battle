@@ -60,7 +60,28 @@
   <div id="container">
     <div class="column">
       <div id="game"></div>
-      <select id="enemy-options"> </select>
+      <div class="row">
+        <label for="enemy-options">Enemy AI:</label>
+        <select id="enemy-options"> </select>
+        <label for="enemy-count">Number of enemies:</label>
+        <select id="enemy-count">
+          <option name="e0" value="0">0</option>
+          <option name="e1" value="1">1</option>
+          <option name="e2" value="2">2</option>
+          <option name="e3" value="3">3</option>
+          <option name="e4" value="4">4</option>
+          <option name="e5" value="5">5</option>
+        </select>
+        <label for="ally-count">Number of allies:</label>
+        <select id="ally-count">
+          <option name="a0" value="0">0</option>
+          <option name="a1" value="1">1</option>
+          <option name="a2" value="2">2</option>
+          <option name="a3" value="3">3</option>
+          <option name="a4" value="4">4</option>
+          <option name="a5" value="5">5</option>
+        </select>
+      </div>
       </select>
       <div id="output">some test output</div>
     </div>

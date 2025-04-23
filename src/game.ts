@@ -14,10 +14,10 @@ declare function insert_enemies(element:any, names:string[]):void;
 /**
   The Game class is in charge of running the arena and coordinating all of the updates.
   It keeps track of the set of tanks and the score as well. In order to use it:
-  
+
   1. Create a div with the id 'game'
   2. Create the game (`new Game()`)
-  3. Call `game.setEnemyAI(ai_name)` with the name of the enemy control code module 
+  3. Call `game.setEnemyAI(ai_name)` with the name of the enemy control code module
      you want to use. It should be structured like the ones in enemy_ai/tank_*.ts
   4. Call `game.setAllyCode(code)` with the user's code, if it exists. If not, the ally
      tanks will start with a null module.
@@ -38,7 +38,8 @@ export class Game {
   enemy_ai_modules: {[key:string]:JsModule}
   enemy_ai: JsModule
   editor: Editor
-  
+  pending:Function[]
+
   // The target frames per second for the physics simulation
   static SimFPS = 60;
 
@@ -80,6 +81,7 @@ export class Game {
     this.bullets = {};
     this.paused = true;
     this.editor = editor;
+    this.pending = [];
     // create a renderer
     this.render = Render.create({
       element: document.querySelector('#game'),
@@ -127,8 +129,8 @@ export class Game {
 
   /** addAllies
   * Sets the number of allied tanks to be included in the battle. Each tank
-  * will get a copy of the current code and a blue color. The Allied tanks are always 
-  * team_id 0 while running in the browser, to make it simple to know which tanks to 
+  * will get a copy of the current code and a blue color. The Allied tanks are always
+  * team_id 0 while running in the browser, to make it simple to know which tanks to
   * update when the editor's content get shipped.
   * */
   addAllies(n: number) {
@@ -155,9 +157,45 @@ export class Game {
         this.println(`ERROR: Code could not be loaded: ${e}`);
       });
   }
+  setAllyCount(n:number) {
 
+    // first, remove all of the enemies (that means team_id != 0)
+    // then, call this.addAllies(n)
+    let saved_enemy_tanks = {};
+    for (let entry of Object.entries(this.tanks)) {
+      if (entry[1].team_id != 0) {
+        //saving the enemy tank
+        saved_enemy_tanks[entry[0]] = entry[1];
+      } else {
+        entry[1].remove_from_world(this.engine.world);
+      }
+    }
+    this.tanks = saved_enemy_tanks;
+    this.addAllies(n);
+    this.reset();
+  }
+
+
+  /** Remove all existing enemies, then add back the number requested. */
+  setEnemyCount(n:number) {
+    let self = this;
+    this.pending.push(()=>{
+      console.log("Setting enemy count");
+      let saved_ally_tanks = {};
+      for(let entry of Object.entries(self.tanks)) {
+        if(entry[1].team_id == 0) {
+          saved_ally_tanks[entry[0]] = entry[1];
+        } else {
+          entry[1].remove_from_world(this.engine.world);
+        }
+      }
+      self.tanks = saved_ally_tanks;
+      self.addEnemies(n);
+      self.reset();
+    });
+  }
   /** addEnemies
-  *   Add the selected number of enemies to the arena. Each enemy will start with 
+  *   Add the selected number of enemies to the arena. Each enemy will start with
   *   the currently-selected enemy AI module.
   * */
   addEnemies(n:number) {
@@ -169,7 +207,7 @@ export class Game {
         opacity: 1,
       });
       enemy.setModule(
-        new Script(this.enemy_ai, 
+        new Script(this.enemy_ai,
           new Globals()
             .withGame(this)
             .withTank(enemy)));
@@ -180,7 +218,7 @@ export class Game {
   /** setAllyCode
   *   Set the allied tanks' code to be the string provided. It is assumed to be a JS module
   *   with a single export named `setup`, which does nothing other than return an instance
-  *   of a class that has a function called `update(dt:number,api:Globals)`. This module 
+  *   of a class that has a function called `update(dt:number,api:Globals)`. This module
   *   will be reused between several tanks, so it can't use global data anywhwere! If you use
   *   global data, your tanks will all be sharing and updating the *same variables*, so their
   *   behavior will be very strange.
@@ -222,7 +260,7 @@ export class Game {
       return null;
     }
   }
-  
+
   /** Return the matter-js Composite that contains all of the game bodies.
   **/
   world():Composite {
@@ -263,7 +301,7 @@ export class Game {
    *
    * - on `beforeupdate`, it calls update on all tanks and bullets
    *    - any bullets that have collided (are 'dead') will be removed
-   * - on `collisionActive`, it updates the radar values. Radar is the only game 
+   * - on `collisionActive`, it updates the radar values. Radar is the only game
    *   entity that can have an active collision that does anything right now. Tanks
    *   will eventually be damaged while in a collision, but not yet.
    * - on `collisionStart`, it applies damage and marks things as dead:
@@ -272,8 +310,9 @@ export class Game {
   **/
   register_updates() {
     // Update the controls before the step starts
+    console.log("**** New game loop started ****");
     Events.on(this.engine, 'beforeUpdate', (event)=> {
-      //console.log("update");
+     //console.log("update");
       this.output=[];
       let engine = event.source;
       let new_bullets = {};
@@ -414,6 +453,13 @@ export class Game {
   // This is where the engine's update function is called as a result of requestAnimationFrame. The
   // actual game updates happen in the handler from Game.register_updates.
   update() {
+    if(this.pending.length > 0) {
+      for(let event of this.pending) {
+        event()
+      }
+      this.pending = [];
+    }
+
     let this_update = new Date().getTime()/1000.0;
     if(this.last_update < 0) {
       this.last_update = this_update-1/Game.SimFPS;
