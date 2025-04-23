@@ -95,10 +95,9 @@ class Tank {
       let delta_angle = this.radarAngleChange();
       this.controls.boost = 1;
       let drive_dir_error = this.sensors.radar_angle;
-      if(Math.abs(drive_dir_error)>Math.PI/4){
+      if(Math.abs(drive_dir_error)>Math.PI/6){
         // need to turn quickly to close the gap
         this.turnAtSpeed(drive_dir_error*10);
-        api.println(`turn fast: ${drive_dir_error}`);
       } else {
         this.turnAtSpeed(5*delta_angle);
       }
