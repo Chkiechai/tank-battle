@@ -267,6 +267,7 @@ export function loop(api:Globals) {
       let velocity = Vector.mult(Vector.create(Math.cos(angle), Math.sin(angle)), (this.left_speed+this.right_speed)/2);
       Body.setAngularVelocity(this.body, delta_angle);
       Body.setVelocity(this.body, Vector.mult(velocity,1/Game.SimFPS));
+      this.getSensors().speed = Vector.magnitude(Body.getVelocity(this.body));
       this.energy -= this.controls.boost*Tank.MaxEnergy*delta_t;
     }
   }
@@ -294,7 +295,7 @@ export function loop(api:Globals) {
   getSensors() : Sensors {
     return {
       radar_hits: this.radar.get_hits(),
-      speed: Game.SimFPS*(this.left_speed+this.right_speed)/2,
+      speed: Globals.SimFPS * Vector.magnitude(Body.getVelocity(this.body)),
       direction:this.body.angle,
       gun_angle: angleRelativeTo(this.turret.get_angle(), 0),
       radar_angle: angleRelativeTo(this.radar.angle(),this.body.angle),

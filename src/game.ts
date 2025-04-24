@@ -158,7 +158,6 @@ export class Game {
       });
   }
   setAllyCount(n:number) {
-
     // first, remove all of the enemies (that means team_id != 0)
     // then, call this.addAllies(n)
     let saved_enemy_tanks = {};
