@@ -39,7 +39,7 @@ export class Game {
   enemy_ai: JsModule
   editor: Editor
   pending:Function[]
-
+  first_run: boolean
   // The target frames per second for the physics simulation
   static SimFPS = 60;
 
@@ -81,6 +81,7 @@ export class Game {
     this.bullets = {};
     this.paused = true;
     this.editor = editor;
+    this.first_run = true;
     this.pending = [];
     // create a renderer
     this.render = Render.create({
@@ -288,9 +289,10 @@ export class Game {
     }
     this.bullets = [];
      // add some tanks if there aren't any
-    if(Object.keys(this.tanks).length == 0) {
-      this.addAllies(4);
-      this.addEnemies(4);
+    if(this.first_run) {
+      this.addAllies(3);
+      this.addEnemies(3);
+      this.first_run = false;
     }
   }
 
