@@ -40,6 +40,8 @@ export class Game {
   editor: Editor
   pending:Function[]
   first_run: boolean
+  message_queue:{[key:number]:{sender:number, message:any}[]}
+  
   // The target frames per second for the physics simulation
   static SimFPS = 60;
 
@@ -83,6 +85,11 @@ export class Game {
     this.editor = editor;
     this.first_run = true;
     this.pending = [];
+    this.message_queue = {
+      0:[],
+      1:[],
+    };
+  
     // create a renderer
     this.render = Render.create({
       element: document.querySelector('#game'),
@@ -94,6 +101,8 @@ export class Game {
         wireframes: false,
       }
     });
+
+   
     // This comes from index.html, and all it does is populate the enemy AI selector
     // box so that the user can choose among the AI modules.
     insert_enemies(document.querySelector("#enemy-options"), Object.keys(this.enemy_ai_modules));
@@ -128,6 +137,12 @@ export class Game {
     this.register_updates();
   }
 
+  // Send a message to the team specified by id. The message can be any javascript
+  // data whatsoever.
+  send_message(tank_id: number, team_id: number, message:any):void {
+    this.message_queue[team_id]?.push({sender:tank_id, message})
+  }
+ 
   /** addAllies
   * Sets the number of allied tanks to be included in the battle. Each tank
   * will get a copy of the current code and a blue color. The Allied tanks are always
@@ -326,7 +341,16 @@ export class Game {
       // erase all the dead ones
       this.bullets = new_bullets;
       for(let tank of Object.values(this.tanks)) {
+        for(let message of this.message_queue[tank.team_id]) {
+          if(tank.id() != message.sender) {
+            tank.receiveMessage(message.message);
+          }
+        }
         tank.update(engine.timing.lastDelta/1000.0,this);
+      }
+      this.message_queue = {
+        0:[],
+        1:[],
       }
       this.updateOutput();
     });

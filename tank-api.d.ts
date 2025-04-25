@@ -40,6 +40,7 @@ export interface Sensors  {
   gun_angle: number,
   radar_angle: number,
   energy: number,
+  messages: any[],
   impact: boolean,
 }
 export interface Tank{
@@ -81,6 +82,7 @@ export interface Globals {
   limitAngle(ang:number):number 
   clamp(num:number, min:number, max:number): number 
   fmod(num:number, modulus: number):number 
+  sendMessage(message: any):void
   Ray: Ray
   Vector:Vector
 }

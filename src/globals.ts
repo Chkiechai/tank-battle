@@ -10,7 +10,7 @@ export interface Controls {
   right_track_speed: number,
   fire_gun: number,
   show_radar: boolean,
-  boost: number
+  boost: number,
 }
 
 export interface RadarData  {
@@ -37,6 +37,8 @@ export interface Sensors  {
   impact: boolean,
 }
 export interface Tank{
+  team_id:number
+  id():number
   getControls():Controls
   getSensors():Sensors
   setControls(c:Controls):void
@@ -46,6 +48,7 @@ export interface Game{
   println(...msg:any[]):void
   pause():void
   resume():void
+  send_message(tank_id:number, team_id: number, message:any):void
 }
 
 export class Globals {
@@ -91,6 +94,10 @@ export class Globals {
   setControls(controls:Controls) {
     this.check();
     this.tank?.setControls(controls);
+  }
+  sendMessage(msg:any) {
+    this.check();
+    this.game?.send_message(this.tank?.id(), this.tank?.team_id, msg);
   }
   getDeltaT():number{
     this.check();

@@ -45,6 +45,7 @@ export class Tank{
   turret: Turret
   hit_points: number
   bullets:Bullet[]
+  messages: any[]
 
   static MinTurnAngle: number=0.00001
   static MaxAngularVelocity: number=Globals.MaxTurnSpeed
@@ -111,7 +112,8 @@ export function loop(api:Globals) {
     this.turret = new Turret(this);
     this.hit_points = Tank.MaxHitPoints;
     this.bullets = [];
-
+    this.messages = [];
+    
     if(typeof Tank.MaxEnergy == 'undefined') {
       throw new Error("invalid tank");
     }
@@ -123,7 +125,11 @@ export function loop(api:Globals) {
 
     this.controls = Tank.DefaultControls();
   }
-
+  
+  receiveMessage(msg:any) {
+    this.messages.push(msg);
+  }
+  
   setStyle(style:RenderStyle) {
     for(let key of Object.keys(style)){
       this.body.render[key] = style[key];
@@ -221,7 +227,6 @@ export function loop(api:Globals) {
     }
 
     this.energy = Math.min(this.energy+Tank.RechargeRate, Tank.MaxEnergy);
-
     if(this.update_handler) {
       this.update_handler(this);
     }
@@ -270,6 +275,7 @@ export function loop(api:Globals) {
       this.getSensors().speed = Vector.magnitude(Body.getVelocity(this.body));
       this.energy -= this.controls.boost*Tank.MaxEnergy*delta_t;
     }
+    this.messages = [];
   }
 
   // Put some diagnostics up about the tank's motion properties
@@ -300,6 +306,7 @@ export function loop(api:Globals) {
       gun_angle: angleRelativeTo(this.turret.get_angle(), 0),
       radar_angle: angleRelativeTo(this.radar.angle(),this.body.angle),
       energy: this.energy,
+      messages: this.messages,
       impact: false,
     } as Sensors;
   }

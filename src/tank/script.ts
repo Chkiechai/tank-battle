@@ -9,11 +9,11 @@ export interface JsModule {
 }
 
 export class EmptyTank {
-  update(api:Globals) {}
+  update(_api:Globals) {}
 }
 
 export class EmptyModule {
-  setup(api:Globals) {
+  setup(_api:Globals) {
     return new EmptyTank();
   }
 }
