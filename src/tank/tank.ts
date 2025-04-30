@@ -125,7 +125,9 @@ export function loop(api:Globals) {
 
     this.controls = Tank.DefaultControls();
   }
-  
+
+  // The sending half of this happens in Game.send_message, which is called from 
+  // Globals.sendMessage using its cached tank and game refs.
   receiveMessage(msg:any) {
     this.messages.push(msg);
   }
