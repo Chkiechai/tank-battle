@@ -303,6 +303,7 @@ export function loop(api:Globals) {
   getSensors() : Sensors {
     return {
       radar_hits: this.radar.get_hits(),
+      id: this.id(),
       speed: Globals.SimFPS * Vector.magnitude(Body.getVelocity(this.body)),
       direction:this.body.angle,
       gun_angle: angleRelativeTo(this.turret.get_angle(), 0),

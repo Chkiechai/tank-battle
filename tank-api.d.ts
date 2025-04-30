@@ -35,6 +35,7 @@ export interface RadarHit  {
 
 export interface Sensors  {
   radar_hits: RadarData,
+  id: number,
   speed: number,
   direction: number,
   gun_angle: number,
