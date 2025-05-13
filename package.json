@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "build":     "npm run build-code && npm run bundle-web",
+    "build": "npm run build-code && npm run bundle-web",
     "build-web": "npm run build-code && npm run bundle-web",
     "bw": "npm run build-web",
     "build-code": "tsc",
@@ -24,6 +24,8 @@
     "@types/node": "^22.5.4",
     "esbuild": "^0.25.0",
     "jest": "^29.7.0",
+    "jsdoc": "^4.0.4",
+    "typedoc": "^0.28.4",
     "typescript": "^5.6.2"
   },
   "dependencies": {

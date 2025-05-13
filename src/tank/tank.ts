@@ -309,7 +309,7 @@ export function loop(api:Globals) {
       gun_angle: angleRelativeTo(this.turret.get_angle(), 0),
       radar_angle: angleRelativeTo(this.radar.angle(),this.body.angle),
       energy: this.energy,
-      messages: this.messages,
+      messages: this.messages.slice(0),
       impact: false,
     } as Sensors;
   }

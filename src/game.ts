@@ -346,11 +346,13 @@ export class Game {
             tank.receiveMessage(message.message);
           }
         }
-        tank.update(engine.timing.lastDelta/1000.0,this);
       }
       this.message_queue = {
         0:[],
         1:[],
+      }
+      for(let tank of Object.values(this.tanks)) {
+        tank.update(engine.timing.lastDelta/1000.0,this);
       }
       this.updateOutput();
     });

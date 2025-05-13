@@ -106,7 +106,20 @@
   <!--<script src="node_modules/ses/dist/ses.cjs"></script>-->
   <script>
   //import {editor} from "dist/app.js";
-  
+ 
+  /** @param {string} code - An entire js program that can be loaded as a module.
+  *  @returns {{setup:Function}} - Returns an object with a setup function that was extracted from the module.
+  *
+  * This function injects javascript code as a module that can be used to control a tank.
+  * This is called by @see Editor when the "Ship It" button is pressed
+  * after the typescript code has been transpiled into actual javascript.
+  *
+  *
+  * BUG: New modules in script_loader fill up localstorage and cause load to fail.  
+  * The modules get stored in the localstorage because of some browser magic, and
+  * it eventually fills it up. The user then gets a mysterious, silent error when
+  * their code fails to load. The solution for now is to clear the localstorage.
+  */
   function script_loader(code) {
     let self=this;
     console.log(`script_loader: code = ${code}`);
