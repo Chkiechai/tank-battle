@@ -16,7 +16,7 @@ declare global {
  * by the typescript playground at [Typescript Sandbox](https://www.typescriptlang.org/dev/sandbox/)
  *
  * The Editor is responsible for turning the user's typescript code into
- * javascript, and then passing it off to {@see script_loader} (in the 
+ * javascript, and then passing it off to {@link script_loader} (in the 
  * `index.html` file).
  */ 
 export default class Editor {
@@ -108,7 +108,7 @@ export default class Editor {
  
   /** Retrieve the *typescript* code that's currently in the editor.
   * 
-  * See also: {@see Editor.getJsCode} to retrive the transpiled version
+  * See also: {@link Editor.getJsCode} to retrive the transpiled version
   * @returns string - the code directly from the editor with no transpilation.
   * */
   getCode():string {
@@ -117,7 +117,7 @@ export default class Editor {
   
   
   /** Save the code currently in the buffer as the most current, user-approved version. 
-   * The code is also saved periodically by the { @see saveBackup } method, in order to 
+   * The code is also saved periodically by the { @link saveBackup } method, in order to 
    * provide some crash resilience.
   * */
   save() {
@@ -152,7 +152,7 @@ export default class Editor {
    * localstorage key named `com.ginosterous.tank-battle.backup-index`. The data itself is stored 
    * in localstorage under the related keys with names `com.ginosterous.tank-battle.backup.${hash}`.
    *
-   * See also: @see Editor.contentHash
+   * See also: {@link Editor.contentHash}
    * 
    * BUG: Editor.saveBackup does not remove old versions of the code.
    *
@@ -217,7 +217,7 @@ export default class Editor {
   /** Transpile the typescript into javascript, then trigger the code_handler. This
   * is used to actually load the scripts into the tanks when the user clicks "Ship It".
   * It also saves the code to localstorage as a side-effect, marking this as the new
-  * official version. See also @see save
+  * official version. See also {@link save}
   *
   * BUG: Errors are not reported when the code fails to transpile, or when the localstorage is full and it can't save.
   * */

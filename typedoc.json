@@ -1,0 +1,10 @@
+/** @type {Partial<import("typedoc").TypeDocOptions} */
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "entryPoints": ["./src/app.ts", "./src/game.ts", "./src/editor.ts"],
+  "out": "docs",
+  "plugin":   [
+    "typedoc-plugin-rename-defaults",
+    "typedoc-plugin-missing-exports"
+  ]
+}

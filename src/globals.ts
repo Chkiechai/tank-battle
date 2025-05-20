@@ -3,11 +3,32 @@
 import {Vector} from 'matter-js';
 import { Ray, turnAngle,limitAngle,clamp,fmod } from './utils/math';
 
+/** 
+ * The Controls are what the user scripts use to control their tanks. It's accessible in the
+ * tank script's `update` function under the `api.getControls()` call. 
+ *
+ * The user script should change values as desired in order to get the tank to do things. The
+ * values in the members will be left unchanged from the last call, so you can rely on them to
+ * indicate what your last control signal was except for the `fire_gun` control, which is always 
+ * reset to zero after every loop.
+ */
 export interface Controls {
+  /// specify the *turn speed* of the turret, in **radians per second**. This is limited to `Math.PI`
+  //  radians per second.
   turn_gun: number,
+
+  /// Specify the *turn speed* of the {@link Radar}, in **radians per second**. This is limited to `2 * Math.PI`.
   turn_radar: number,
+
+  /// Specify the speed of the left track. This is in "screen units" per second, which approximately equal pixels
+  // per second. Negative numbers will make the track go in reverse, and the limit is an absolute value of 200.
   left_track_speed: number,
+  /// Specify the speed of the right track. This is in "screen units" per second, which approximately equal pixels
+  // per second. Negative numbers will make the track go in reverse, and the limit is an absolute value of 200.
   right_track_speed: number,
+  /// Specify the **power** of the shot from the gun. This ranges from zero to one. Your tank 
+  //has a limited amount of shot energy that is gradually replenished. Smaller shot power will 
+  //let you shoot faster, but larger shot power does more damage beyond just the linear amount.
   fire_gun: number,
   show_radar: boolean,
   boost: number,
